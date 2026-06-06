@@ -1,0 +1,127 @@
+.home-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  background: #f4efe6;
+}
+
+.home-page__hero {
+  max-width: 720px;
+  text-align: center;
+  background: #fffaf2;
+  padding: 56px;
+  border-radius: 28px;
+  box-shadow: 0 20px 60px rgba(40, 30, 20, 0.12);
+}
+
+.home-page__eyebrow {
+  margin: 0 0 12px;
+  color: #8b6f47;
+  font-size: 14px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.home-page__title {
+  margin: 0;
+  font-size: 56px;
+  line-height: 1;
+  color: #241c15;
+}
+
+.home-page__description {
+  margin: 24px auto 0;
+  max-width: 520px;
+  font-size: 20px;
+  line-height: 1.6;
+  color: #4c4036;
+}
+
+.home-page__actions {
+  margin-top: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.pdf-uploader__input {
+  display: none;
+}
+
+.pdf-uploader__label {
+  display: inline-block;
+}
+
+.home-page__status {
+  margin: 28px auto 0;
+  max-width: 420px;
+  padding: 14px 16px;
+  background: #fff4df;
+  border: 1px solid #e6d8c7;
+  border-radius: 14px;
+  color: #4c4036;
+  font-size: 15px;
+}
+
+.home-page__status p {
+  margin: 8px 0 0;
+  color: #8b6f47;
+  line-height: 1.5;
+}
+
+
+.home-page__secondary-button {
+  border: 1px solid #d7c7b5;
+  background: #fffaf2;
+  color: #241c15;
+  border-radius: 10px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.home-page__secondary-button:hover {
+  border-color: #8b6f47;
+}
+
+.home-page__library-link {
+  color: #241c15;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.home-page__library-link:hover {
+  text-decoration: underline;
+}
+
+.home-page__note {
+  margin: 22px auto 0;
+  max-width: 480px;
+  color: #8b6f47;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.home-page__upload-disabled {
+  margin: 0;
+  max-width: 320px;
+  color: #8b6f47;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.home-page__error {
+  margin: 20px 0 0;
+  color: #b42318;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.home-page__error a {
+  color: #241c15;
+  font-weight: 700;
+}

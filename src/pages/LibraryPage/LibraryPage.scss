@@ -1,0 +1,121 @@
+.library-page {
+  min-height: 100vh;
+  padding: 32px;
+  background: #f4efe6;
+  color: #241c15;
+}
+
+.library-page__header {
+  max-width: 860px;
+  margin: 0 auto 24px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.library-page__eyebrow {
+  margin: 0 0 6px;
+  color: #8b6f47;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.library-page__title {
+  margin: 0;
+  font-size: 42px;
+}
+
+.library-page__upload-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  border-radius: 10px;
+  padding: 10px 16px;
+  background: #241c15;
+  color: #fffaf2;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.library-page__status {
+  max-width: 860px;
+  margin: 0 auto 24px;
+  padding: 16px;
+  background: #fffaf2;
+  border: 1px solid #e6d8c7;
+  border-radius: 16px;
+}
+
+.library-page__status p {
+  margin: 8px 0 0;
+  color: #8b6f47;
+}
+
+.library-page__list {
+  max-width: 860px;
+  margin: 0 auto;
+  display: grid;
+  gap: 16px;
+}
+
+.library-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 22px;
+  background: #fffaf2;
+  border: 1px solid #e6d8c7;
+  border-radius: 18px;
+  box-shadow: 0 12px 32px rgba(40, 30, 20, 0.08);
+}
+
+.library-card__title {
+  margin: 0;
+  font-size: 24px;
+}
+
+.library-card__meta {
+  margin: 10px 0 0;
+  color: #6b5a4a;
+  line-height: 1.5;
+}
+
+.library-card__file {
+  margin: 8px 0 0;
+  color: #8b6f47;
+  font-size: 14px;
+}
+
+.library-card__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.library-card__actions button {
+  border: 1px solid #d7c7b5;
+  background: #fffaf2;
+  color: #241c15;
+  border-radius: 10px;
+  padding: 9px 13px;
+  cursor: pointer;
+}
+
+.library-card__actions button:hover {
+  border-color: #8b6f47;
+}
+
+.library-card__delete {
+  color: #b42318 !important;
+}
+
+@media (max-width: 720px) {
+  .library-page__header,
+  .library-card {
+    flex-direction: column;
+  }
+}

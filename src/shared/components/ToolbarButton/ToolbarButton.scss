@@ -1,0 +1,22 @@
+.toolbar-button {
+  border: 1px solid var(--reader-border);
+  background: var(--reader-surface);
+  color: var(--reader-text);
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.toolbar-button:hover:not(:disabled) {
+  border-color: var(--reader-accent);
+}
+
+.toolbar-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.toolbar-button--active {
+  border-color: var(--reader-accent);
+  box-shadow: 0 0 0 2px rgba(139, 111, 71, 0.18);
+}

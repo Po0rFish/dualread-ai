@@ -1,0 +1,31 @@
+.empty-state {
+  max-width: 640px;
+  margin: 120px auto;
+  padding: 40px;
+  background: var(--reader-surface, #fffaf2);
+  border: 1px solid var(--reader-border, #e6d8c7);
+  border-radius: 20px;
+  text-align: center;
+}
+
+.empty-state__title {
+  margin: 0 0 12px;
+  color: var(--reader-text, #241c15);
+  font-size: 28px;
+}
+
+.empty-state__description {
+  margin: 0 0 20px;
+  color: var(--reader-muted, #6b5a4a);
+  line-height: 1.5;
+}
+
+.empty-state__action {
+  display: flex;
+  justify-content: center;
+}
+
+.empty-state__action a {
+  color: var(--reader-text, #241c15);
+  font-weight: 700;
+}
