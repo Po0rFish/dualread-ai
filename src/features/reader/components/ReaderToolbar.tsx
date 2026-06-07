@@ -6,22 +6,26 @@ import type { ReadingProgress } from '../../../shared/storage/readingProgressSto
 interface ReaderToolbarProps {
   readonly theme: ReaderSettings['theme'];
   readonly bookmarksCount: number;
+  readonly savedWordsCount: number;
   readonly readingProgress: ReadingProgress | null;
   readonly onDecreaseFontSize: () => void;
   readonly onIncreaseFontSize: () => void;
   readonly onThemeChange: (theme: ReaderSettings['theme']) => void;
   readonly onOpenBookmarks: () => void;
+  readonly onOpenSavedWords: () => void;
   readonly onContinueReading: () => void;
 }
 
 export function ReaderToolbar({
   theme,
   bookmarksCount,
+  savedWordsCount,
   readingProgress,
   onDecreaseFontSize,
   onIncreaseFontSize,
   onThemeChange,
   onOpenBookmarks,
+  onOpenSavedWords,
   onContinueReading,
 }: ReaderToolbarProps) {
   return (
@@ -57,6 +61,10 @@ export function ReaderToolbar({
 
       <ToolbarButton onClick={onOpenBookmarks}>
         Bookmarks ({bookmarksCount})
+      </ToolbarButton>
+
+      <ToolbarButton onClick={onOpenSavedWords}>
+        Words ({savedWordsCount})
       </ToolbarButton>
 
       <ToolbarButton

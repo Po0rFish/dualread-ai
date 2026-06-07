@@ -7,7 +7,7 @@ import {
 } from '../../shared/repositories/documentsRepository';
 import { deleteDocumentBookmarks } from '../../shared/storage/bookmarksStorage';
 import { deleteReadingProgress } from '../../shared/storage/readingProgressStorage';
-
+import { savedWordsRepository } from '../../shared/repositories/savedWordsRepository';
 import './LibraryPage.scss';
 import { EmptyState } from '../../shared/components';
 
@@ -48,7 +48,7 @@ export function LibraryPage() {
   };
 
   const handleDeleteDocument = async (documentId: string) => {
-    const confirmed = window.confirm(
+    const confirmed = globalThis.confirm(
       'Delete this book from your local library?',
     );
 
@@ -59,6 +59,7 @@ export function LibraryPage() {
     await documentsRepository.delete(documentId);
     deleteDocumentBookmarks(documentId);
     deleteReadingProgress(documentId);
+    await savedWordsRepository.deleteByDocumentId(documentId);
 
     await refreshDocuments();
   };

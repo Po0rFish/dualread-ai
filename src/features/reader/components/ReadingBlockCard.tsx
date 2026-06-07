@@ -3,25 +3,45 @@ import type {
   Bookmark,
   ReadingBlock,
 } from '../../../shared/types/reader';
-import { Button } from '../../../shared/components/index';
+import { Button } from '../../../shared/components';
 import { mockTranslateToEnglish } from '../../translation/services/mockTranslator';
 
 interface ReadingBlockCardProps {
- readonly block: ReadingBlock;
- readonly isBookmarked: boolean;
- readonly onToggleBookmark: (bookmark: Bookmark) => void;
- readonly onReadBlock: (block: ReadingBlock) => void;
+  readonly block: ReadingBlock;
+  readonly isBookmarked: boolean;
+  readonly onToggleBookmark: (bookmark: Bookmark) => void;
+  readonly onReadBlock: (block: ReadingBlock) => void;
+  readonly onSaveWord: (word: string, block: ReadingBlock) => void;
 }
+
+const getSelectedWord = (): string | null => {
+  const selection = globalThis.getSelection();
+  const selectedText = selection?.toString().trim();
+
+  if (!selectedText) {
+    return null;
+  }
+
+  const singleWord = selectedText.match(/^[\p{L}ÄÖÜäöüß-]+$/u);
+
+  if (!singleWord) {
+    return null;
+  }
+
+  return selectedText;
+};
 
 export function ReadingBlockCard({
   block,
   isBookmarked,
   onToggleBookmark,
   onReadBlock,
+  onSaveWord,
 }: ReadingBlockCardProps) {
   const [translatedText, setTranslatedText] = useState(block.translatedText);
   const [isVisible, setIsVisible] = useState(block.isTranslationVisible);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedWord, setSelectedWord] = useState<string | null>(null);
 
   const handleShowTranslation = async () => {
     if (translatedText) {
@@ -55,6 +75,22 @@ export function ReadingBlockCard({
     onReadBlock(block);
   };
 
+  const handleTextMouseUp = () => {
+    const word = getSelectedWord();
+
+    setSelectedWord(word);
+  };
+
+  const handleSaveSelectedWord = () => {
+    if (!selectedWord) {
+      return;
+    }
+
+    onSaveWord(selectedWord, block);
+    setSelectedWord(null);
+    globalThis.getSelection()?.removeAllRanges();
+  };
+
   return (
     <article
       id={block.id}
@@ -65,27 +101,49 @@ export function ReadingBlockCard({
         Page {block.pageNumber} · {block.type}
       </div>
 
-      {block.type === 'title' && (
-        <h2 className="reading-block__title">{block.originalText}</h2>
-      )}
+      <div onMouseUp={handleTextMouseUp}>
+        {block.type === 'title' && (
+          <h2 className="reading-block__title">{block.originalText}</h2>
+        )}
 
-      {block.type === 'subtitle' && (
-        <h3 className="reading-block__subtitle">{block.originalText}</h3>
-      )}
+        {block.type === 'subtitle' && (
+          <h3 className="reading-block__subtitle">
+            {block.originalText}
+          </h3>
+        )}
 
-      {block.type === 'note' && (
-        <p className="reading-block__note">{block.originalText}</p>
-      )}
+        {block.type === 'note' && (
+          <p className="reading-block__note">{block.originalText}</p>
+        )}
 
-      {block.type === 'paragraph' && (
-        <p className="reading-block__original">{block.originalText}</p>
+        {block.type === 'paragraph' && (
+          <p className="reading-block__original">
+            {block.originalText}
+          </p>
+        )}
+      </div>
+
+      {selectedWord && (
+        <div
+          className="reading-block__selection-actions"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <span>Selected: {selectedWord}</span>
+
+          <Button variant="secondary" onClick={handleSaveSelectedWord}>
+            Save word
+          </Button>
+        </div>
       )}
 
       {isVisible && translatedText && (
         <p className="reading-block__translation">{translatedText}</p>
       )}
 
-      <div className="reading-block__actions">
+      <div
+        className="reading-block__actions"
+        onClick={(event) => event.stopPropagation()}
+      >
         {isVisible ? (
           <Button variant="secondary" onClick={() => setIsVisible(false)}>
             Hide translation

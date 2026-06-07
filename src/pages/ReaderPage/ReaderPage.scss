@@ -271,3 +271,119 @@
 .reader-page__toolbar-link:hover {
   border-color: var(--reader-accent);
 }
+
+.reading-block__selection-actions {
+  margin-top: 14px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--reader-surface-soft);
+  border: 1px solid var(--reader-border);
+  border-radius: 12px;
+  color: var(--reader-muted);
+  font-size: 14px;
+}
+
+.saved-words-panel {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 20;
+  width: min(420px, calc(100vw - 48px));
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  background: var(--reader-surface);
+  border: 1px solid var(--reader-border);
+  border-radius: 18px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.24);
+  padding: 18px;
+}
+
+.saved-words-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.saved-words-panel__header h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.saved-words-panel__header button {
+  border: 1px solid var(--reader-border);
+  background: var(--reader-surface-soft);
+  color: var(--reader-text);
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.saved-words-panel__header button:hover {
+  border-color: var(--reader-accent);
+}
+
+.saved-words-panel__empty {
+  margin: 0;
+  color: var(--reader-muted);
+}
+
+.saved-words-panel__list {
+  display: grid;
+  gap: 12px;
+}
+
+.saved-words-panel__item {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid var(--reader-border);
+  background: var(--reader-surface-soft);
+  color: var(--reader-text);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.saved-words-panel__word {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 18px;
+}
+
+.saved-words-panel__context {
+  margin: 0 0 8px;
+  color: var(--reader-muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.saved-words-panel__page {
+  color: var(--reader-muted);
+  font-size: 13px;
+}
+
+.saved-words-panel__item button {
+  align-self: flex-start;
+  border: 1px solid var(--reader-border);
+  background: var(--reader-surface);
+  color: var(--reader-text);
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.saved-words-panel__item button:hover {
+  border-color: var(--reader-accent);
+}
+
+.saved-words-panel__highlight {
+  background: #f7d77a;
+  color: #241c15;
+  border-radius: 4px;
+  padding: 0 3px;
+  font-weight: 700;
+}
