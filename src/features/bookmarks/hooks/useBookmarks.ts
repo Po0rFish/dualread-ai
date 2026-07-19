@@ -1,37 +1,98 @@
 import { useMemo, useState } from 'react';
-import type { Bookmark } from '../../../shared/types/reader';
-import {
-  getDocumentBookmarks,
-  toggleBookmark,
-} from '../../../shared/storage/bookmarksStorage';
+import type { BookmarkItem } from '../components/BookmarksPanel';
 
-export const useBookmarks = (documentId: string) => {
-  const [bookmarks, setBookmarks] = useState<Bookmark[]>(() =>
-    getDocumentBookmarks(documentId),
-  );
+const MAX_BOOKMARKS_PER_DOCUMENT = 50;
 
+interface UseBookmarksResult {
+  readonly bookmarks: BookmarkItem[];
+  readonly bookmarkMessage: string | null;
+  readonly isBookmarked: (segmentId: string) => boolean;
+  readonly addBookmark: (bookmark: BookmarkItem) => void;
+  readonly removeBookmark: (bookmarkId: string) => void;
+  readonly toggleBookmark: (bookmark: BookmarkItem) => void;
+  readonly clearBookmarkMessage: () => void;
+}
+
+export const useBookmarks = (): UseBookmarksResult => {
+  const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
   const [bookmarkMessage, setBookmarkMessage] = useState<string | null>(null);
 
-  const bookmarkedBlockIds = useMemo(() => {
-    return new Set(bookmarks.map((bookmark) => bookmark.blockId));
+  const bookmarkedSegmentIds = useMemo(() => {
+    return new Set(
+      bookmarks.map((bookmark) => {
+        return bookmark.segmentId;
+      }),
+    );
   }, [bookmarks]);
 
-  const isBookmarked = (blockId: string): boolean => {
-    return bookmarkedBlockIds.has(blockId);
+  const isBookmarked = (segmentId: string): boolean => {
+    return bookmarkedSegmentIds.has(segmentId);
   };
 
-  const handleToggleBookmark = (bookmark: Bookmark): void => {
-    const result = toggleBookmark(bookmark);
+  const addBookmark = (bookmark: BookmarkItem): void => {
+    setBookmarks((currentBookmarks) => {
+      const alreadyExists = currentBookmarks.some((currentBookmark) => {
+        return currentBookmark.id === bookmark.id;
+      });
 
-    setBookmarks(result.bookmarks);
+      if (alreadyExists) {
+        setBookmarkMessage(null);
+        return currentBookmarks;
+      }
 
-    if (result.status === 'limit-reached') {
-      setBookmarkMessage(
-        'Bookmark limit reached. You can keep up to 50 bookmarks per document.',
-      );
-      return;
-    }
+      if (currentBookmarks.length >= MAX_BOOKMARKS_PER_DOCUMENT) {
+        setBookmarkMessage(
+          'Bookmark limit reached. You can keep up to 50 bookmarks per document.',
+        );
 
+        return currentBookmarks;
+      }
+
+      setBookmarkMessage(null);
+
+      return [...currentBookmarks, bookmark];
+    });
+  };
+
+  const removeBookmark = (bookmarkId: string): void => {
+    setBookmarks((currentBookmarks) => {
+      return currentBookmarks.filter((bookmark) => {
+        return bookmark.id !== bookmarkId;
+      });
+    });
+
+    setBookmarkMessage(null);
+  };
+
+  const toggleBookmark = (bookmark: BookmarkItem): void => {
+    setBookmarks((currentBookmarks) => {
+      const alreadyExists = currentBookmarks.some((currentBookmark) => {
+        return currentBookmark.id === bookmark.id;
+      });
+
+      if (alreadyExists) {
+        setBookmarkMessage(null);
+
+        return currentBookmarks.filter((currentBookmark) => {
+          return currentBookmark.id !== bookmark.id;
+        });
+      }
+
+      if (currentBookmarks.length >= MAX_BOOKMARKS_PER_DOCUMENT) {
+        setBookmarkMessage(
+          'Bookmark limit reached. You can keep up to 50 bookmarks per document.',
+        );
+
+        return currentBookmarks;
+      }
+
+      setBookmarkMessage(null);
+
+      return [...currentBookmarks, bookmark];
+    });
+  };
+
+  const clearBookmarkMessage = (): void => {
     setBookmarkMessage(null);
   };
 
@@ -39,6 +100,9 @@ export const useBookmarks = (documentId: string) => {
     bookmarks,
     bookmarkMessage,
     isBookmarked,
-    toggleBookmark: handleToggleBookmark,
+    addBookmark,
+    removeBookmark,
+    toggleBookmark,
+    clearBookmarkMessage,
   };
 };

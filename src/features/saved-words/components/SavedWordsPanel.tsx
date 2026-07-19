@@ -1,10 +1,21 @@
-import type { SavedWord } from '../../../shared/types/reader';
+import type { ReactNode } from 'react';
+
+export interface SavedWordItem {
+  readonly id: string;
+  readonly documentId: string;
+  readonly word: string;
+  readonly context: string;
+  readonly pageNumber: number;
+  readonly segmentId?: string;
+  readonly createdAt: string;
+}
 
 interface SavedWordsPanelProps {
-  savedWords: SavedWord[];
-  isOpen: boolean;
-  onClose: () => void;
-  onDeleteWord: (wordId: string) => void;
+  readonly savedWords: SavedWordItem[];
+  readonly isOpen: boolean;
+  readonly onClose: () => void;
+  readonly onDeleteWord: (wordId: string) => void;
+  readonly onSelectWordContext?: (savedWord: SavedWordItem) => void;
 }
 
 const escapeRegExp = (value: string): string => {
@@ -12,17 +23,17 @@ const escapeRegExp = (value: string): string => {
 };
 
 const renderHighlightedContext = (
-  contextSentence: string,
+  context: string,
   word: string,
-): React.ReactNode => {
+): ReactNode => {
   const normalizedWord = word.trim();
 
   if (!normalizedWord) {
-    return contextSentence;
+    return context;
   }
 
   const wordRegex = new RegExp(`(${escapeRegExp(normalizedWord)})`, 'gi');
-  const parts = contextSentence.split(wordRegex);
+  const parts = context.split(wordRegex);
 
   return parts.map((part, index) => {
     const isMatch = part.toLowerCase() === normalizedWord.toLowerCase();
@@ -42,11 +53,12 @@ const renderHighlightedContext = (
   });
 };
 
-export function SavedWordsPanel({
+export default function SavedWordsPanel({
   savedWords,
   isOpen,
   onClose,
   onDeleteWord,
+  onSelectWordContext,
 }: SavedWordsPanelProps) {
   if (!isOpen) {
     return null;
@@ -54,50 +66,75 @@ export function SavedWordsPanel({
 
   return (
     <aside className="saved-words-panel">
-      <div className="saved-words-panel__header">
-        <h2>Saved words</h2>
+      <header className="saved-words-panel__header">
+        <h2 className="saved-words-panel__title">Saved words</h2>
 
-        <button type="button" onClick={onClose}>
+        <button
+          type="button"
+          className="saved-words-panel__close-button"
+          onClick={onClose}
+        >
           Close
         </button>
-      </div>
+      </header>
 
-      {savedWords.length === 0 ? (
+      {savedWords.length === 0 && (
         <p className="saved-words-panel__empty">
           No saved words yet.
         </p>
-      ) : (
+      )}
+
+      {savedWords.length > 0 && (
         <div className="saved-words-panel__list">
-          {savedWords.map((savedWord) => (
-            <article
-              key={savedWord.id}
-              className="saved-words-panel__item"
-            >
-              <div>
-                <strong className="saved-words-panel__word">
-                  {savedWord.word}
-                </strong>
-
-                <p className="saved-words-panel__context">
-                  {renderHighlightedContext(
-                    savedWord.contextSentence,
-                    savedWord.word,
-                  )}
-                </p>
-
-                <span className="saved-words-panel__page">
-                  Page {savedWord.pageNumber}
-                </span>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => onDeleteWord(savedWord.id)}
+          {savedWords.map((savedWord) => {
+            return (
+              <article
+                key={savedWord.id}
+                className="saved-words-panel__item"
               >
-                Delete
-              </button>
-            </article>
-          ))}
+                <div className="saved-words-panel__item-content">
+                  <strong className="saved-words-panel__word">
+                    {savedWord.word}
+                  </strong>
+
+                  <p className="saved-words-panel__context">
+                    {renderHighlightedContext(
+                      savedWord.context,
+                      savedWord.word,
+                    )}
+                  </p>
+
+                  <small className="saved-words-panel__meta">
+                    Page {savedWord.pageNumber}
+                  </small>
+                </div>
+
+                <div className="saved-words-panel__item-actions">
+                  {onSelectWordContext && (
+                    <button
+                      type="button"
+                      className="saved-words-panel__context-button"
+                      onClick={() => {
+                        onSelectWordContext(savedWord);
+                      }}
+                    >
+                      Open context
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    className="saved-words-panel__delete-button"
+                    onClick={() => {
+                      onDeleteWord(savedWord.id);
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </article>
+            );
+          })}
         </div>
       )}
     </aside>

@@ -1,14 +1,29 @@
 .toolbar-button {
-  border: 1px solid var(--reader-border);
-  background: var(--reader-surface);
-  color: var(--reader-text);
-  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 36px;
   padding: 8px 12px;
+
+  border: 1px solid var(--toolbar-button-border, #d7c7b5);
+  border-radius: 8px;
+  background: var(--toolbar-button-bg, #fffaf2);
+  color: var(--toolbar-button-color, #241c15);
+
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.2;
+
   cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
 }
 
 .toolbar-button:hover:not(:disabled) {
-  border-color: var(--reader-accent);
+  border-color: var(--toolbar-button-accent, #8b6f47);
 }
 
 .toolbar-button:disabled {
@@ -17,6 +32,6 @@
 }
 
 .toolbar-button--active {
-  border-color: var(--reader-accent);
-  box-shadow: 0 0 0 2px rgba(139, 111, 71, 0.18);
+  border-color: var(--toolbar-button-accent, #8b6f47);
+  box-shadow: 0 0 0 2px var(--toolbar-button-active-shadow, rgba(139, 111, 71, 0.18));
 }

@@ -1,150 +1,107 @@
-import * as pdfjsLib from 'pdfjs-dist';
-import type { TextItem } from 'pdfjs-dist/types/src/display/api';
-import type {
-  PdfPageText,
-  PdfTextLine,
-} from '../../../shared/types/reader';
+import type { PdfTextToken } from '../../../shared/types/reader';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.mjs',
-  import.meta.url,
-).toString();
-
-interface TextToken {
-  text: string;
-  x: number;
-  y: number;
-  width: number;
-  fontSize: number;
+interface PdfJsTextItem {
+  readonly str: string;
+  readonly transform: number[];
+  readonly width: number;
+  readonly height: number;
+  readonly hasEOL: boolean;
 }
 
-const isTextItem = (item: unknown): item is TextItem => {
+interface ExtractPdfTextParams {
+  readonly page: {
+    getTextContent: () => Promise<{
+      items: unknown[];
+    }>;
+  };
+  readonly pageNumber: number;
+  readonly pageHeight: number;
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === 'object' && value !== null;
+};
+
+const isPdfJsTextItem = (item: unknown): item is PdfJsTextItem => {
+  if (!isRecord(item)) {
+    return false;
+  }
+
   return (
-    typeof item === 'object' &&
-    item !== null &&
-    'str' in item &&
-    typeof (item as TextItem).str === 'string'
+    typeof item.str === 'string' &&
+    Array.isArray(item.transform) &&
+    item.transform.length >= 6 &&
+    item.transform.every((value) => {
+      return typeof value === 'number';
+    }) &&
+    typeof item.width === 'number' &&
+    typeof item.height === 'number' &&
+    typeof item.hasEOL === 'boolean'
   );
 };
 
-const getFontSize = (item: TextItem): number => {
-  const [, b, , d] = item.transform;
-
-  return Math.round(Math.hypot(b, d) * 10) / 10;
+const getTokenLineY = (
+  item: PdfJsTextItem,
+  pageHeight: number,
+): number => {
+  return pageHeight - item.transform[5];
 };
 
-const getTextToken = (item: TextItem): TextToken | null => {
+const getFontSize = (item: PdfJsTextItem): number => {
+  const scaleY = item.transform[3];
+
+  if (scaleY !== 0) {
+    return Math.abs(scaleY);
+  }
+
+  return item.height;
+};
+
+const createTextToken = (
+  item: PdfJsTextItem,
+  pageNumber: number,
+  pageHeight: number,
+  orderIndex: number,
+): PdfTextToken | null => {
   const text = item.str.trim();
 
   if (!text) {
     return null;
   }
 
-  const [a, , , , x, y] = item.transform;
-  const fontSize = getFontSize(item) || Math.abs(a);
-
   return {
     text,
-    x,
-    y,
+    pageNumber,
+    orderIndex,
+
+    x: item.transform[4],
+    lineY: getTokenLineY(item, pageHeight),
     width: item.width,
-    fontSize,
+    height: item.height,
+
+    fontSize: getFontSize(item),
+    hasEOL: item.hasEOL,
   };
 };
 
-const groupTokensIntoLines = (
-  tokens: TextToken[],
-  pageWidth: number,
-  pageHeight: number,
-): PdfTextLine[] => {
-  const lineMap = new Map<number, TextToken[]>();
+export const extractPdfText = async ({
+  page,
+  pageNumber,
+  pageHeight,
+}: ExtractPdfTextParams): Promise<PdfTextToken[]> => {
+  const textContent = await page.getTextContent();
+  const textItems = textContent.items.filter(isPdfJsTextItem);
 
-  for (const token of tokens) {
-    const roundedY = Math.round(token.y);
-    const currentLine = lineMap.get(roundedY) ?? [];
-
-    currentLine.push(token);
-    lineMap.set(roundedY, currentLine);
-  }
-
-  return Array.from(lineMap.entries())
-    .map(([y, lineTokens]) => {
-      const sortedTokens = [...lineTokens].sort((a, b) => a.x - b.x);
-
-      const text = sortedTokens
-        .map((token) => token.text)
-        .join(' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-
-      const x = Math.min(...sortedTokens.map((token) => token.x));
-
-      const right = Math.max(
-        ...sortedTokens.map((token) => token.x + token.width),
-      );
-
-      const width = right - x;
-
-      const fontSize = Math.max(
-        ...sortedTokens.map((token) => token.fontSize),
-      );
-
-      return {
-        text,
-        x,
-        y,
-        width,
-        fontSize,
-        pageWidth,
+  return textItems
+    .map((item, orderIndex) => {
+      return createTextToken(
+        item,
+        pageNumber,
         pageHeight,
-      };
+        orderIndex,
+      );
     })
-    .filter((line) => line.text.length > 0)
-    .sort((a, b) => b.y - a.y);
-};
-
-const linesToPageText = (lines: PdfTextLine[]): string => {
-  return lines
-    .map((line) => line.text)
-    .join('\n')
-    .replace(/[ \t]+/g, ' ')
-    .trim();
-};
-
-export const extractPdfText = async (file: File): Promise<PdfPageText[]> => {
-  const arrayBuffer = await file.arrayBuffer();
-
-  const pdfDocument = await pdfjsLib.getDocument({
-    data: arrayBuffer,
-  }).promise;
-
-  const pages: PdfPageText[] = [];
-
-  for (let pageIndex = 1; pageIndex <= pdfDocument.numPages; pageIndex += 1) {
-    const page = await pdfDocument.getPage(pageIndex);
-    const viewport = page.getViewport({ scale: 1 });
-    const textContent = await page.getTextContent();
-
-    const tokens = textContent.items
-      .filter(isTextItem)
-      .map(getTextToken)
-      .filter((token): token is TextToken => token !== null);
-
-    const lines = groupTokensIntoLines(
-      tokens,
-      viewport.width,
-      viewport.height,
-    );
-
-    const pageText = linesToPageText(lines);
-
-    pages.push({
-      pageNumber: pageIndex,
-      text: pageText,
-      lines,
-      characterCount: pageText.length,
+    .filter((token): token is PdfTextToken => {
+      return token !== null;
     });
-  }
-
-  return pages;
 };

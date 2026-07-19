@@ -1,9 +1,10 @@
+import type { ReactNode } from 'react';
 import './EmptyState.scss';
 
 interface EmptyStateProps {
   readonly title: string;
   readonly description?: string;
-  readonly action?: React.ReactNode;
+  readonly action?: ReactNode;
 }
 
 export function EmptyState({

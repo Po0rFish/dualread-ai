@@ -14,6 +14,10 @@
   gap: 24px;
 }
 
+.library-page__header-content {
+  min-width: 0;
+}
+
 .library-page__eyebrow {
   margin: 0 0 6px;
   color: #8b6f47;
@@ -25,9 +29,11 @@
 .library-page__title {
   margin: 0;
   font-size: 42px;
+  line-height: 1.1;
 }
 
-.library-page__upload-link {
+.library-page__upload-link,
+.library-page__empty-link {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -40,82 +46,49 @@
   font-weight: 600;
 }
 
-.library-page__status {
-  max-width: 860px;
-  margin: 0 auto 24px;
-  padding: 16px;
-  background: #fffaf2;
-  border: 1px solid #e6d8c7;
-  border-radius: 16px;
-}
-
-.library-page__status p {
-  margin: 8px 0 0;
-  color: #8b6f47;
-}
-
-.library-page__list {
+.library-page__empty {
   max-width: 860px;
   margin: 0 auto;
-  display: grid;
-  gap: 16px;
-}
-
-.library-card {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20px;
-  padding: 22px;
+  padding: 32px;
   background: #fffaf2;
   border: 1px solid #e6d8c7;
   border-radius: 18px;
   box-shadow: 0 12px 32px rgba(40, 30, 20, 0.08);
 }
 
-.library-card__title {
+.library-page__empty-title {
   margin: 0;
-  font-size: 24px;
+  font-size: 28px;
+  line-height: 1.2;
 }
 
-.library-card__meta {
-  margin: 10px 0 0;
+.library-page__empty-description {
+  max-width: 560px;
+  margin: 16px 0 0;
   color: #6b5a4a;
-  line-height: 1.5;
+  font-size: 16px;
+  line-height: 1.6;
 }
 
-.library-card__file {
-  margin: 8px 0 0;
-  color: #8b6f47;
-  font-size: 14px;
-}
-
-.library-card__actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.library-card__actions button {
-  border: 1px solid #d7c7b5;
-  background: #fffaf2;
-  color: #241c15;
-  border-radius: 10px;
-  padding: 9px 13px;
-  cursor: pointer;
-}
-
-.library-card__actions button:hover {
-  border-color: #8b6f47;
-}
-
-.library-card__delete {
-  color: #b42318 !important;
+.library-page__empty-link {
+  margin-top: 24px;
 }
 
 @media (max-width: 720px) {
-  .library-page__header,
-  .library-card {
+  .library-page {
+    padding: 20px;
+  }
+
+  .library-page__header {
     flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .library-page__title {
+    font-size: 36px;
+  }
+
+  .library-page__empty {
+    padding: 24px;
   }
 }

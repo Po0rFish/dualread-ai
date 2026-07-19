@@ -1,5 +1,19 @@
-export const mockTranslateToEnglish = async (text: string): Promise<string> => {
-  await new Promise((resolve) => setTimeout(resolve, 500));
+import type { TranslationLanguage } from '../types/translation';
 
-  return `[Mock English translation]: ${text}`;
+interface MockTranslateTextParams {
+  readonly text: string;
+  readonly targetLanguage: TranslationLanguage;
+}
+
+const MOCK_TRANSLATION_DELAY_MS = 500;
+
+export const mockTranslateText = async ({
+  text,
+  targetLanguage,
+}: MockTranslateTextParams): Promise<string> => {
+  await new Promise<void>((resolve) => {
+    setTimeout(resolve, MOCK_TRANSLATION_DELAY_MS);
+  });
+
+  return `[Mock translation to ${targetLanguage}]: ${text}`;
 };

@@ -1,21 +1,33 @@
-import { useCallback, useMemo, useState } from 'react';
-import {
-  savedWordsRepository,
-  SavedWordAlreadyExistsError,
-  SavedWordsLimitReachedError,
-} from '../../../shared/repositories/savedWordsRepository';
-import type { SavedWord } from '../../../shared/types/reader';
+import { useMemo, useState } from 'react';
+import type { SavedWordItem } from '../components/SavedWordsPanel';
 
-export const useSavedWords = (documentId: string) => {
-  const [savedWords, setSavedWords] = useState<SavedWord[]>([]);
-  const [savedWordsMessage, setSavedWordsMessage] = useState<string | null>(
-    null,
-  );
+const MAX_SAVED_WORDS_PER_DOCUMENT = 300;
+
+interface UseSavedWordsResult {
+  readonly savedWords: SavedWordItem[];
+  readonly savedWordsMessage: string | null;
+  readonly isSavedWordsLoading: boolean;
+  readonly isWordSaved: (word: string) => boolean;
+  readonly loadSavedWords: () => Promise<void>;
+  readonly saveWord: (savedWord: SavedWordItem) => Promise<void>;
+  readonly deleteSavedWord: (wordId: string) => Promise<void>;
+  readonly clearSavedWordsMessage: () => void;
+}
+
+export const useSavedWords = (
+  documentId: string,
+): UseSavedWordsResult => {
+  const [savedWords, setSavedWords] = useState<SavedWordItem[]>([]);
+  const [savedWordsMessage, setSavedWordsMessage] = useState<
+    string | null
+  >(null);
   const [isSavedWordsLoading, setIsSavedWordsLoading] = useState(false);
 
   const savedWordsSet = useMemo(() => {
     return new Set(
-      savedWords.map((savedWord) => savedWord.word.trim().toLowerCase()),
+      savedWords.map((savedWord) => {
+        return savedWord.word.trim().toLowerCase();
+      }),
     );
   }, [savedWords]);
 
@@ -23,57 +35,63 @@ export const useSavedWords = (documentId: string) => {
     return savedWordsSet.has(word.trim().toLowerCase());
   };
 
-  const loadSavedWords = useCallback(async (): Promise<void> => {
-    if (!documentId) {
-      setSavedWords([]);
-      return;
-    }
-
+  const loadSavedWords = async (): Promise<void> => {
     setIsSavedWordsLoading(true);
 
     try {
-      const documentSavedWords =
-        await savedWordsRepository.getByDocumentId(documentId);
-
-      setSavedWords(documentSavedWords);
+      setSavedWords([]);
+      setSavedWordsMessage(null);
     } finally {
       setIsSavedWordsLoading(false);
     }
-  }, [documentId]);
+  };
 
-  const saveWord = async (savedWord: SavedWord): Promise<void> => {
-    try {
-      await savedWordsRepository.add(savedWord);
+  const saveWord = async (
+    savedWord: SavedWordItem,
+  ): Promise<void> => {
+    if (!documentId) {
+      return;
+    }
 
-      const documentSavedWords =
-        await savedWordsRepository.getByDocumentId(savedWord.documentId);
+    setSavedWords((currentSavedWords) => {
+      const normalizedWord = savedWord.word.trim().toLowerCase();
 
-      setSavedWords(documentSavedWords);
-      setSavedWordsMessage(null);
-    } catch (error) {
-      if (error instanceof SavedWordAlreadyExistsError) {
+      const alreadyExists = currentSavedWords.some((currentSavedWord) => {
+        return (
+          currentSavedWord.word.trim().toLowerCase() === normalizedWord
+        );
+      });
+
+      if (alreadyExists) {
         setSavedWordsMessage('This word is already saved.');
-        return;
+        return currentSavedWords;
       }
 
-      if (error instanceof SavedWordsLimitReachedError) {
+      if (currentSavedWords.length >= MAX_SAVED_WORDS_PER_DOCUMENT) {
         setSavedWordsMessage(
           'Saved words limit reached. You can keep up to 300 words per document.',
         );
-        return;
+
+        return currentSavedWords;
       }
 
-      throw error;
-    }
+      setSavedWordsMessage(null);
+
+      return [...currentSavedWords, savedWord];
+    });
   };
 
   const deleteSavedWord = async (wordId: string): Promise<void> => {
-    await savedWordsRepository.delete(wordId);
+    setSavedWords((currentSavedWords) => {
+      return currentSavedWords.filter((savedWord) => {
+        return savedWord.id !== wordId;
+      });
+    });
 
-    const documentSavedWords =
-      await savedWordsRepository.getByDocumentId(documentId);
+    setSavedWordsMessage(null);
+  };
 
-    setSavedWords(documentSavedWords);
+  const clearSavedWordsMessage = (): void => {
     setSavedWordsMessage(null);
   };
 
@@ -85,5 +103,6 @@ export const useSavedWords = (documentId: string) => {
     loadSavedWords,
     saveWord,
     deleteSavedWord,
+    clearSavedWordsMessage,
   };
 };

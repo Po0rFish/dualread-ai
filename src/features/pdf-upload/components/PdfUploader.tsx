@@ -1,49 +1,40 @@
-import { validatePdfFile } from '../lib/validatePdfFile';
-import { Button } from '../../../shared/components';
+import type { ChangeEvent } from 'react';
+import { pdfUploadConfig } from '../config/pdfUploadConfig';
 
 interface PdfUploaderProps {
   readonly onFileSelect: (file: File) => void;
-  readonly isLoading?: boolean;
 }
 
-export function PdfUploader({
+export default function PdfUploader({
   onFileSelect,
-  isLoading = false,
 }: PdfUploaderProps) {
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = event.target.files?.[0];
+  const handleFileChange = (
+    event: ChangeEvent<HTMLInputElement>,
+  ): void => {
+    const file = event.target.files?.item(0);
 
-    if (!selectedFile) {
+    if (!file) {
       return;
     }
 
-    const errorMessage = validatePdfFile(selectedFile);
+    onFileSelect(file);
 
-    if (errorMessage) {
-      alert(errorMessage);
-      event.target.value = '';
-      return;
-    }
-
-    onFileSelect(selectedFile);
     event.target.value = '';
   };
 
   return (
     <div className="pdf-uploader">
-      <input
-        id="pdf-file-input"
-        className="pdf-uploader__input"
-        type="file"
-        accept="application/pdf"
-        onChange={handleChange}
-        disabled={isLoading}
-      />
+      <label className="pdf-uploader__label">
+        <span className="pdf-uploader__label-text">
+          Choose PDF file
+        </span>
 
-      <label htmlFor="pdf-file-input" className="pdf-uploader__label">
-        <Button as="span" disabled={isLoading}>
-          {isLoading ? 'Reading PDF...' : 'Choose PDF file'}
-        </Button>
+        <input
+          type="file"
+          className="pdf-uploader__input"
+          accept={`${pdfUploadConfig.acceptedMimeType},${pdfUploadConfig.acceptedExtension}`}
+          onChange={handleFileChange}
+        />
       </label>
     </div>
   );

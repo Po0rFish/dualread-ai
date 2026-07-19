@@ -1,11 +1,15 @@
+import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import './Button.scss';
 
+type ButtonVariant = 'primary' | 'secondary';
+
 interface ButtonProps {
-  readonly children: React.ReactNode;
-  readonly onClick?: () => void;
-  readonly variant?: 'primary' | 'secondary';
+  readonly children: ReactNode;
+  readonly onClick?: ButtonHTMLAttributes<HTMLButtonElement>['onClick'];
+  readonly variant?: ButtonVariant;
   readonly disabled?: boolean;
   readonly as?: 'button' | 'span';
+  readonly className?: string;
 }
 
 export function Button({
@@ -14,19 +18,26 @@ export function Button({
   variant = 'primary',
   disabled = false,
   as = 'button',
+  className,
 }: ButtonProps) {
-  const className = `button button--${variant}`;
+  const buttonClassName = [
+    'button',
+    `button--${variant}`,
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   if (as === 'span') {
-    return <span className={className}>{children}</span>;
+    return <span className={buttonClassName}>{children}</span>;
   }
 
   return (
     <button
-      className={className}
+      type="button"
+      className={buttonClassName}
       onClick={onClick}
       disabled={disabled}
-      type="button"
     >
       {children}
     </button>

@@ -1,10 +1,10 @@
 const STORAGE_KEY = 'dualread-ai:reading-progress';
 
 export interface ReadingProgress {
-  documentId: string;
-  blockId: string;
-  pageNumber: number;
-  updatedAt: string;
+  readonly documentId: string;
+  readonly pageNumber: number;
+  readonly segmentId?: string;
+  readonly updatedAt: string;
 }
 
 type ReadingProgressMap = Record<string, ReadingProgress>;
@@ -27,7 +27,9 @@ const writeProgressMap = (progressMap: ReadingProgressMap): void => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(progressMap));
 };
 
-export const setReadingProgress = (progress: ReadingProgress): void => {
+export const setReadingProgress = (
+  progress: ReadingProgress,
+): void => {
   const progressMap = readProgressMap();
 
   progressMap[progress.documentId] = progress;
