@@ -1,5 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import type { ClassifiedPdfTextSegment } from '../../../shared/types/reader';
+import {
+  getReadingProgress,
+  setReadingProgress,
+} from '../../../shared/storage/readingProgressStorage';
 import TranslationPanel from '../../translation/components/TranslationPanel';
 import { useTranslationItems } from '../../translation/hooks/useTranslationItems';
 import { pdfjsLib } from '../lib/pdfjsClient';
@@ -7,10 +11,12 @@ import PdfPageCanvas from './PdfPageCanvas';
 
 interface PdfDocumentReaderProps {
   readonly file: File;
+  readonly documentId?: string;
 }
 
 export default function PdfDocumentReader({
   file,
+  documentId,
 }: PdfDocumentReaderProps) {
   const [selectedSegment, setSelectedSegment] =
     useState<ClassifiedPdfTextSegment | null>(null);
@@ -25,6 +31,18 @@ export default function PdfDocumentReader({
     removeTranslationItem,
     clearTranslationItems,
   } = useTranslationItems();
+
+  const saveCurrentPageProgress = (pageNumber: number): void => {
+    if (!documentId) {
+      return;
+    }
+
+    setReadingProgress({
+      documentId,
+      pageNumber,
+      updatedAt: new Date().toISOString(),
+    });
+  };
 
   useEffect(() => {
     let isCancelled = false;
@@ -43,9 +61,20 @@ export default function PdfDocumentReader({
           return;
         }
 
+        const savedProgress = documentId
+          ? getReadingProgress(documentId)
+          : null;
+
+        const savedPageNumber = savedProgress?.pageNumber ?? 1;
+
+        const nextPageNumber =
+          savedPageNumber >= 1 && savedPageNumber <= pdfDocument.numPages
+            ? savedPageNumber
+            : 1;
+
         setPagesCount(pdfDocument.numPages);
-        setCurrentPageNumber(1);
-        setPageInputValue('1');
+        setCurrentPageNumber(nextPageNumber);
+        setPageInputValue(String(nextPageNumber));
         setSelectedSegment(null);
       } catch (error) {
         if (isCancelled) {
@@ -66,34 +95,29 @@ export default function PdfDocumentReader({
     return () => {
       isCancelled = true;
     };
-  }, [file]);
+  }, [file, documentId]);
+
+  const handleChangePage = (nextPageNumber: number): void => {
+    setCurrentPageNumber(nextPageNumber);
+    setPageInputValue(String(nextPageNumber));
+    setSelectedSegment(null);
+    saveCurrentPageProgress(nextPageNumber);
+  };
 
   const handleGoToPreviousPage = (): void => {
-    setCurrentPageNumber((currentValue) => {
-      const nextPageNumber = Math.max(currentValue - 1, 1);
+    const nextPageNumber = Math.max(currentPageNumber - 1, 1);
 
-      setPageInputValue(String(nextPageNumber));
-
-      return nextPageNumber;
-    });
-
-    setSelectedSegment(null);
+    handleChangePage(nextPageNumber);
   };
 
   const handleGoToNextPage = (): void => {
-    setCurrentPageNumber((currentValue) => {
-      if (pagesCount === 0) {
-        return currentValue;
-      }
+    if (pagesCount === 0) {
+      return;
+    }
 
-      const nextPageNumber = Math.min(currentValue + 1, pagesCount);
+    const nextPageNumber = Math.min(currentPageNumber + 1, pagesCount);
 
-      setPageInputValue(String(nextPageNumber));
-
-      return nextPageNumber;
-    });
-
-    setSelectedSegment(null);
+    handleChangePage(nextPageNumber);
   };
 
   const handleGoToPage = (): void => {
@@ -109,13 +133,11 @@ export default function PdfDocumentReader({
       return;
     }
 
-    setCurrentPageNumber(nextPageNumber);
-    setPageInputValue(String(nextPageNumber));
-    setSelectedSegment(null);
+    handleChangePage(nextPageNumber);
   };
 
   const handleGoToPageSubmit = (
-    event: React.FormEvent<HTMLFormElement>,
+    event: FormEvent<HTMLFormElement>,
   ): void => {
     event.preventDefault();
     handleGoToPage();

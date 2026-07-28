@@ -1,5 +1,9 @@
 import { useCallback, useState } from 'react';
 import {
+  deleteOrphanReadingProgress,
+  deleteReadingProgress,
+} from '../../../shared/storage/readingProgressStorage';
+import {
   documentsRepository,
   LibraryDocumentsLimitReachedError,
   MAX_LIBRARY_DOCUMENTS,
@@ -26,6 +30,16 @@ interface UseLibraryDocumentsResult {
   readonly clearLibraryMessage: () => void;
 }
 
+const cleanupOrphanProgress = (
+  documents: LibraryDocumentInfo[],
+): void => {
+  deleteOrphanReadingProgress(
+    documents.map((document) => {
+      return document.id;
+    }),
+  );
+};
+
 export const useLibraryDocuments = (): UseLibraryDocumentsResult => {
   const [documents, setDocuments] = useState<LibraryDocumentInfo[]>([]);
   const [selectedDocument, setSelectedDocument] =
@@ -38,6 +52,8 @@ export const useLibraryDocuments = (): UseLibraryDocumentsResult => {
 
     try {
       const nextDocuments = await documentsRepository.getAllInfo();
+
+      cleanupOrphanProgress(nextDocuments);
 
       setDocuments(nextDocuments);
       setLibraryMessage(null);
@@ -60,6 +76,8 @@ export const useLibraryDocuments = (): UseLibraryDocumentsResult => {
         });
 
         const nextDocuments = await documentsRepository.getAllInfo();
+
+        cleanupOrphanProgress(nextDocuments);
 
         setDocuments(nextDocuments);
         setLibraryMessage(null);
@@ -100,6 +118,8 @@ export const useLibraryDocuments = (): UseLibraryDocumentsResult => {
 
         const nextDocuments = await documentsRepository.getAllInfo();
 
+        cleanupOrphanProgress(nextDocuments);
+
         setDocuments(nextDocuments);
         setSelectedDocument(document);
         setLibraryMessage(null);
@@ -118,8 +138,11 @@ export const useLibraryDocuments = (): UseLibraryDocumentsResult => {
 
       try {
         await documentsRepository.delete(documentId);
+        deleteReadingProgress(documentId);
 
         const nextDocuments = await documentsRepository.getAllInfo();
+
+        cleanupOrphanProgress(nextDocuments);
 
         setDocuments(nextDocuments);
 

@@ -6,8 +6,14 @@ import PdfUploader from '../../features/pdf-upload/components/PdfUploader';
 import { useLibraryDocuments } from '../../features/library/hooks/useLibraryDocuments';
 import './HomePage.scss';
 
+interface SelectedDocumentFile {
+  readonly file: File;
+  readonly documentId: string;
+}
+
 export default function HomePage() {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedDocumentFile, setSelectedDocumentFile] =
+    useState<SelectedDocumentFile | null>(null);
   const [homePageMessage, setHomePageMessage] = useState<string | null>(
     null,
   );
@@ -32,7 +38,10 @@ export default function HomePage() {
         }
 
         setHomePageMessage('PDF saved to library.');
-        setSelectedFile(file);
+        setSelectedDocumentFile({
+          file,
+          documentId: savedDocument.id,
+        });
       } catch (error) {
         console.error('[HomePage] PDF upload error:', error);
 
@@ -71,9 +80,12 @@ export default function HomePage() {
         )}
       </section>
 
-      {selectedFile && (
+      {selectedDocumentFile && (
         <section className="home-page__reader">
-          <PdfDocumentReader file={selectedFile} />
+          <PdfDocumentReader
+            file={selectedDocumentFile.file}
+            documentId={selectedDocumentFile.documentId}
+          />
         </section>
       )}
     </main>

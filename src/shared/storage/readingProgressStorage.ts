@@ -24,6 +24,11 @@ const readProgressMap = (): ReadingProgressMap => {
 };
 
 const writeProgressMap = (progressMap: ReadingProgressMap): void => {
+  if (Object.keys(progressMap).length === 0) {
+    localStorage.removeItem(STORAGE_KEY);
+    return;
+  }
+
   localStorage.setItem(STORAGE_KEY, JSON.stringify(progressMap));
 };
 
@@ -51,4 +56,21 @@ export const deleteReadingProgress = (documentId: string): void => {
   delete progressMap[documentId];
 
   writeProgressMap(progressMap);
+};
+
+export const deleteOrphanReadingProgress = (
+  existingDocumentIds: string[],
+): void => {
+  const existingDocumentIdsSet = new Set(existingDocumentIds);
+  const progressMap = readProgressMap();
+
+  const nextProgressMap: ReadingProgressMap = {};
+
+  Object.values(progressMap).forEach((progress) => {
+    if (existingDocumentIdsSet.has(progress.documentId)) {
+      nextProgressMap[progress.documentId] = progress;
+    }
+  });
+
+  writeProgressMap(nextProgressMap);
 };

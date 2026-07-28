@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useLibraryDocuments } from '../../features/library/hooks/useLibraryDocuments';
+import { getReadingProgress } from '../../shared/storage/readingProgressStorage';
 import './LibraryPage.scss';
 
 const formatFileSize = (fileSize: number): string => {
@@ -14,6 +15,23 @@ const formatDate = (date: string): string => {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(new Date(date));
+};
+
+const getLastReadPageText = (
+  documentId: string,
+  pagesCount: number,
+): string => {
+  const progress = getReadingProgress(documentId);
+
+  if (!progress) {
+    return 'Not started yet';
+  }
+
+  if (progress.pageNumber < 1 || progress.pageNumber > pagesCount) {
+    return 'Not started yet';
+  }
+
+  return `Last read page: ${progress.pageNumber} of ${pagesCount}`;
 };
 
 export default function LibraryPage() {
@@ -83,6 +101,13 @@ export default function LibraryPage() {
                     <p className="library-page__document-meta">
                       {document.pagesCount} pages ·{' '}
                       {formatFileSize(document.fileSize)}
+                    </p>
+
+                    <p className="library-page__document-meta">
+                      {getLastReadPageText(
+                        document.id,
+                        document.pagesCount,
+                      )}
                     </p>
 
                     <p className="library-page__document-meta">

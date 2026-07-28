@@ -132,7 +132,10 @@ export default function ReaderPage() {
 
       {!isReaderPageLoading && readerFile && (
         <section className="reader-page__reader">
-          <PdfDocumentReader file={readerFile} />
+          <PdfDocumentReader
+            file={readerFile}
+            documentId={documentId}
+          />
         </section>
       )}
     </main>
