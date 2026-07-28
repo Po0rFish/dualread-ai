@@ -48,3 +48,20 @@
 .pdf-uploader__input {
   display: none;
 }
+
+.home-page__library-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 40px;
+  margin-top: 16px;
+  padding: 10px 16px;
+
+  border-radius: 10px;
+  background: #241c15;
+  color: #fffaf2;
+
+  font-weight: 700;
+  text-decoration: none;
+}
