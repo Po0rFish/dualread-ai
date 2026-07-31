@@ -1,15 +1,10 @@
 import { useCallback, useState } from 'react';
+import { createTranslationItem } from '../lib/createTranslationItem';
 import { cacheRepo } from '../repositories/cacheRepo';
-import type {
-  TranslationCacheItem,
-  TranslationLanguage,
-} from '../types/cache';
+import type { TranslationLanguage } from '../types/cache';
 import type { TranslationSourceSegment } from '../types/segment';
 import type { TranslationProvider } from '../types/service';
-import type {
-  TranslationItem,
-  TranslationSourceType,
-} from '../types/translation';
+import type { TranslationItem } from '../types/translation';
 
 interface CacheableTranslationItem extends TranslationItem {
   readonly documentId: string;
@@ -38,89 +33,6 @@ interface UseTranslationItemsResult {
 }
 
 const TARGET_LANGUAGE: TranslationLanguage = 'english';
-
-const createFallbackItemId = ({
-  segment,
-  provider,
-}: {
-  readonly segment: TranslationSourceSegment;
-  readonly provider: TranslationProvider;
-}): string => {
-  return `${segment.id}:${TARGET_LANGUAGE}:${provider}`;
-};
-
-const createCachedItemId = ({
-  documentId,
-  sourceTextHash,
-  targetLanguage,
-  provider,
-}: {
-  readonly documentId: string;
-  readonly sourceTextHash: string;
-  readonly targetLanguage: TranslationLanguage;
-  readonly provider: TranslationProvider;
-}): string => {
-  return `${documentId}:${sourceTextHash}:${targetLanguage}:${provider}`;
-};
-
-const createItemId = ({
-  segment,
-  provider,
-}: {
-  readonly segment: TranslationSourceSegment;
-  readonly provider: TranslationProvider;
-}): string => {
-  if (segment.documentId && segment.sourceTextHash) {
-    return createCachedItemId({
-      documentId: segment.documentId,
-      sourceTextHash: segment.sourceTextHash,
-      targetLanguage: TARGET_LANGUAGE,
-      provider,
-    });
-  }
-
-  return createFallbackItemId({
-    segment,
-    provider,
-  });
-};
-
-const getSourceType = (
-  segment: TranslationSourceSegment,
-): TranslationSourceType => {
-  if (segment.sourceTextHash) {
-    return 'sentence';
-  }
-
-  return 'segment';
-};
-
-const createItemFromSegment = ({
-  segment,
-  cachedTranslation,
-  provider,
-}: {
-  readonly segment: TranslationSourceSegment;
-  readonly cachedTranslation: TranslationCacheItem | null;
-  readonly provider: TranslationProvider;
-}): TranslationItem => {
-  return {
-    id: createItemId({
-      segment,
-      provider,
-    }),
-    sourceText: segment.text,
-    sourceType: getSourceType(segment),
-    translatedText: cachedTranslation?.translatedText ?? null,
-    translationStatus: cachedTranslation ? 'cached' : 'idle',
-    translationError: null,
-    targetLanguage: TARGET_LANGUAGE,
-    provider,
-    documentId: segment.documentId,
-    sourceTextHash: segment.sourceTextHash,
-    pageNumber: segment.pageNumber,
-  };
-};
 
 const isCacheableTranslationItem = (
   item: TranslationItem | null,
@@ -172,10 +84,16 @@ export const useTranslationItems = ({
             })
             : null;
 
+        const validCachedTranslation =
+          cachedTranslation?.provider === provider
+            ? cachedTranslation
+            : null;
+
         addTranslationItem(
-          createItemFromSegment({
+          createTranslationItem({
             segment,
-            cachedTranslation,
+            cachedTranslation: validCachedTranslation,
+            targetLanguage: TARGET_LANGUAGE,
             provider,
           }),
         );
