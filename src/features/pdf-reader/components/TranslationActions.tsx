@@ -1,9 +1,9 @@
-import type { ClassifiedPdfTextSegment } from '../../../shared/types/reader';
+import type { TranslationSourceSegment } from '../../translation/types/segment';
 
 interface TranslationActionsProps {
-  readonly translationSegment: ClassifiedPdfTextSegment | null;
+  readonly translationSegment: TranslationSourceSegment | null;
   readonly onAddToTranslation: (
-    segment: ClassifiedPdfTextSegment | null,
+    segment: TranslationSourceSegment | null,
   ) => void;
 }
 

@@ -13,7 +13,6 @@ import type {
   LibraryDocument,
   LibraryDocumentInfo,
 } from '../types/library';
-
 interface UseLibraryDocumentsResult {
   readonly documents: LibraryDocumentInfo[];
   readonly selectedDocument: LibraryDocument | null;

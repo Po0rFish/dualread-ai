@@ -1,4 +1,5 @@
 import type { ClassifiedPdfTextSegment } from '../../../../shared/types/reader';
+import type { TranslationSourceSegment } from '../../../translation/types/segment';
 import type { PdfSentence } from '../../types/documentText';
 
 interface CreateTranslationSegmentParams {
@@ -9,7 +10,7 @@ interface CreateTranslationSegmentParams {
 export const createTranslationSegment = ({
   selectedSegment,
   selectedSentence,
-}: CreateTranslationSegmentParams): ClassifiedPdfTextSegment | null => {
+}: CreateTranslationSegmentParams): TranslationSourceSegment | null => {
   if (!selectedSegment) {
     return null;
   }
@@ -23,5 +24,7 @@ export const createTranslationSegment = ({
     id: selectedSentence.id,
     text: selectedSentence.text,
     charactersCount: selectedSentence.text.length,
+    documentId: selectedSentence.documentId,
+    sourceTextHash: selectedSentence.sourceTextHash,
   };
 };

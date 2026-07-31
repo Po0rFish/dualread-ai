@@ -1,180 +1,189 @@
 import { useState } from 'react';
 import { mockTranslateText } from '../services/mockTranslator';
-import type {
-  TranslationItem,
-  TranslationLanguage,
-  TranslationResult,
-} from '../types/translation';
+import type { TranslationItem } from '../types/translation';
 
 interface TranslationPanelProps {
   readonly items: TranslationItem[];
+  readonly onUpdateItem: (
+    itemId: string,
+    translatedText: string,
+  ) => Promise<void>;
   readonly onRemoveItem: (itemId: string) => void;
   readonly onClearItems: () => void;
 }
 
-const DEFAULT_TARGET_LANGUAGE: TranslationLanguage = 'english';
+const getStatusText = (item: TranslationItem): string => {
+  if (item.translationStatus === 'cached') {
+    return 'Saved translation';
+  }
+
+  if (item.translationStatus === 'translated') {
+    return 'New translation';
+  }
+
+  if (item.translationStatus === 'error') {
+    return 'Translation error';
+  }
+
+  return 'Not translated yet';
+};
+
+const getTranslateButtonText = (
+  item: TranslationItem,
+  isTranslating: boolean,
+): string => {
+  if (isTranslating) {
+    return 'Translating...';
+  }
+
+  if (item.translatedText) {
+    return 'Retranslate';
+  }
+
+  return 'Translate';
+};
 
 export default function TranslationPanel({
   items,
+  onUpdateItem,
   onRemoveItem,
   onClearItems,
 }: TranslationPanelProps) {
-  const [targetLanguage] = useState<TranslationLanguage>(
-    DEFAULT_TARGET_LANGUAGE,
-  );
+  const [translatingItemIds, setTranslatingItemIds] = useState<
+    string[]
+  >([]);
 
-  const [results, setResults] = useState<TranslationResult[]>([]);
-  const [isTranslating, setIsTranslating] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  const hasItems = items.length > 0;
-  const hasResults = results.length > 0;
-
-  const handleTranslate = async (): Promise<void> => {
-    try {
-      setIsTranslating(true);
-      setErrorMessage(null);
-
-      const nextResults = await Promise.all(
-        items.map(async (item) => {
-          const translatedText = await mockTranslateText({
-            text: item.sourceText,
-            targetLanguage,
-          });
-
-          return {
-            id: `translation-result-${item.id}`,
-            itemId: item.id,
-            translatedText,
-            targetLanguage,
-          };
-        }),
-      );
-
-      setResults(nextResults);
-    } catch {
-      setErrorMessage('Translation failed.');
-    } finally {
-      setIsTranslating(false);
-    }
+  const isItemTranslating = (itemId: string): boolean => {
+    return translatingItemIds.includes(itemId);
   };
 
-  const handleRemoveItem = (itemId: string): void => {
-    setResults((currentResults) => {
-      return currentResults.filter((result) => {
-        return result.itemId !== itemId;
+
+  const startItemTranslation = (itemId: string): void => {
+    setTranslatingItemIds((currentItemIds) => {
+      if (currentItemIds.includes(itemId)) {
+        return currentItemIds;
+      }
+
+      return [...currentItemIds, itemId];
+    });
+  };
+
+  const finishItemTranslation = (itemId: string): void => {
+    setTranslatingItemIds((currentItemIds) => {
+      return currentItemIds.filter((currentItemId) => {
+        return currentItemId !== itemId;
       });
     });
-
-    onRemoveItem(itemId);
   };
 
-  const handleClear = (): void => {
-    setResults([]);
-    setErrorMessage(null);
-    onClearItems();
+  const handleTranslateClick = (item: TranslationItem): void => {
+    const translateItem = async (): Promise<void> => {
+      try {
+        startItemTranslation(item.id);
+
+        const translatedText = await mockTranslateText({
+          sourceText: item.sourceText,
+          targetLanguage: item.targetLanguage,
+        });
+
+        await onUpdateItem(item.id, translatedText);
+      } finally {
+        finishItemTranslation(item.id);
+      }
+    };
+
+    void translateItem();
   };
 
   return (
-    <section className="translation-panel">
+    <aside className="translation-panel">
       <header className="translation-panel__header">
         <h2 className="translation-panel__title">Translation</h2>
 
-        <button
-          type="button"
-          className="translation-panel__clear-button"
-          onClick={handleClear}
-          disabled={!hasItems && !hasResults}
-        >
-          Clear
-        </button>
+        {items.length > 0 && (
+          <button
+            type="button"
+            className="translation-panel__clear-button"
+            onClick={onClearItems}
+          >
+            Clear
+          </button>
+        )}
       </header>
 
-      <div className="translation-panel__controls">
-        <p className="translation-panel__language">
-          Target language: English
-        </p>
-
-        <button
-          type="button"
-          className="translation-panel__translate-button"
-          onClick={() => {
-            void handleTranslate();
-          }}
-          disabled={!hasItems || isTranslating}
-        >
-          {isTranslating ? 'Translating...' : 'Translate'}
-        </button>
-      </div>
-
-      {errorMessage && (
-        <p className="translation-panel__error">{errorMessage}</p>
-      )}
-
-      {!hasItems && (
+      {items.length === 0 && (
         <p className="translation-panel__empty">
-          Select a text segment to prepare translation.
+          Add selected sentence to translation.
         </p>
       )}
 
-      {hasItems && (
+      {items.length > 0 && (
         <div className="translation-panel__items">
-          <h3 className="translation-panel__subtitle">Selected text</h3>
-
           {items.map((item) => {
+            const isTranslating = isItemTranslating(item.id);
+
             return (
               <article
                 key={item.id}
                 className="translation-panel__item"
               >
-                <div className="translation-panel__item-header">
+                <header className="translation-panel__item-header">
                   <small className="translation-panel__item-meta">
-                    {item.sourceType}
-                    {item.pageNumber ? ` · page ${item.pageNumber}` : ''}
+                    {item.sourceType} · {getStatusText(item)}
                   </small>
 
                   <button
                     type="button"
-                    className="translation-panel__item-remove-button"
+                    className="translation-panel__remove-button"
                     onClick={() => {
-                      handleRemoveItem(item.id);
+                      onRemoveItem(item.id);
                     }}
                   >
                     Remove
                   </button>
+                </header>
+
+                <div className="translation-panel__block">
+                  <h3 className="translation-panel__block-title">
+                    Original
+                  </h3>
+
+                  <p className="translation-panel__source-text">
+                    {item.sourceText}
+                  </p>
                 </div>
 
-                <p className="translation-panel__item-text">
-                  {item.sourceText}
-                </p>
+                <div className="translation-panel__block">
+                  <h3 className="translation-panel__block-title">
+                    Translation
+                  </h3>
+
+                  {item.translatedText ? (
+                    <p className="translation-panel__translated-text">
+                      {item.translatedText}
+                    </p>
+                  ) : (
+                    <p className="translation-panel__placeholder">
+                      Not translated yet.
+                    </p>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  className="translation-panel__translate-button"
+                  onClick={() => {
+                    handleTranslateClick(item);
+                  }}
+                  disabled={isTranslating}
+                >
+                  {getTranslateButtonText(item, isTranslating)}
+                </button>
               </article>
             );
           })}
         </div>
       )}
-
-      {hasResults && (
-        <div className="translation-panel__results">
-          <h3 className="translation-panel__subtitle">Result</h3>
-
-          {results.map((result) => {
-            return (
-              <article
-                key={result.id}
-                className="translation-panel__result"
-              >
-                <p className="translation-panel__result-text">
-                  {result.translatedText}
-                </p>
-
-                <small className="translation-panel__result-meta">
-                  {result.targetLanguage}
-                </small>
-              </article>
-            );
-          })}
-        </div>
-      )}
-    </section>
+    </aside>
   );
 }

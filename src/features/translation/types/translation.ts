@@ -1,19 +1,34 @@
-export type TranslationSourceType = 'segment' | 'word' | 'custom';
+import type { TranslationLanguage } from './cache';
 
-export type TranslationLanguage = 'english';
+export type { TranslationLanguage } from './cache';
+
+export type TranslationSourceType =
+  | 'segment'
+  | 'sentence'
+  | 'word'
+  | 'custom';
+
+export type TranslationItemStatus =
+  | 'idle'
+  | 'cached'
+  | 'translated'
+  | 'error';
 
 export interface TranslationItem {
   readonly id: string;
   readonly sourceText: string;
   readonly sourceType: TranslationSourceType;
+  readonly translatedText: string | null;
+  readonly translationStatus: TranslationItemStatus;
+  readonly targetLanguage: TranslationLanguage;
 
+  readonly documentId?: string;
+  readonly sourceTextHash?: string;
   readonly pageNumber?: number;
-  readonly segmentId?: string;
 }
 
 export interface TranslationResult {
-  readonly id: string;
-  readonly itemId: string;
+  readonly sourceText: string;
   readonly translatedText: string;
   readonly targetLanguage: TranslationLanguage;
 }
