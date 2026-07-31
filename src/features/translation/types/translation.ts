@@ -20,6 +20,7 @@ export interface TranslationItem {
   readonly sourceType: TranslationSourceType;
   readonly translatedText: string | null;
   readonly translationStatus: TranslationItemStatus;
+  readonly translationError: string | null;
   readonly targetLanguage: TranslationLanguage;
 
   readonly documentId?: string;

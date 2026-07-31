@@ -24,6 +24,10 @@ interface UseTranslationItemsResult {
     itemId: string,
     translatedText: string,
   ) => Promise<void>;
+  readonly markTranslationItemError: (
+    itemId: string,
+    errorMessage: string,
+  ) => void;
   readonly removeTranslationItem: (itemId: string) => void;
   readonly clearTranslationItems: () => void;
 }
@@ -83,6 +87,7 @@ const createItemFromSegment = ({
     sourceType: getSourceType(segment),
     translatedText: cachedTranslation?.translatedText ?? null,
     translationStatus: cachedTranslation ? 'cached' : 'idle',
+    translationError: null,
     targetLanguage: TARGET_LANGUAGE,
     documentId: segment.documentId,
     sourceTextHash: segment.sourceTextHash,
@@ -131,10 +136,10 @@ export const useTranslationItems = (): UseTranslationItemsResult => {
         const cachedTranslation =
           segment.documentId && segment.sourceTextHash
             ? await cacheRepo.get({
-                documentId: segment.documentId,
-                sourceTextHash: segment.sourceTextHash,
-                targetLanguage: TARGET_LANGUAGE,
-              })
+              documentId: segment.documentId,
+              sourceTextHash: segment.sourceTextHash,
+              targetLanguage: TARGET_LANGUAGE,
+            })
             : null;
 
         addTranslationItem(
@@ -167,6 +172,7 @@ export const useTranslationItems = (): UseTranslationItemsResult => {
             ...item,
             translatedText,
             translationStatus: 'translated',
+            translationError: null,
           };
         });
       });
@@ -186,6 +192,25 @@ export const useTranslationItems = (): UseTranslationItemsResult => {
     [translationItems],
   );
 
+  const markTranslationItemError = useCallback(
+    (itemId: string, errorMessage: string): void => {
+      setTranslationItems((currentItems) => {
+        return currentItems.map((item) => {
+          if (item.id !== itemId) {
+            return item;
+          }
+
+          return {
+            ...item,
+            translationStatus: 'error',
+            translationError: errorMessage,
+          };
+        });
+      });
+    },
+    [],
+  );
+
   const removeTranslationItem = useCallback((itemId: string): void => {
     setTranslationItems((currentItems) => {
       return currentItems.filter((item) => {
@@ -202,6 +227,7 @@ export const useTranslationItems = (): UseTranslationItemsResult => {
     translationItems,
     addSegmentToTranslation,
     updateTranslationItem,
+    markTranslationItemError,
     removeTranslationItem,
     clearTranslationItems,
   };

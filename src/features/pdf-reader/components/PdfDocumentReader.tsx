@@ -44,6 +44,7 @@ export default function PdfDocumentReader({
     translationItems,
     addSegmentToTranslation,
     updateTranslationItem,
+    markTranslationItemError,
     removeTranslationItem,
     clearTranslationItems,
   } = useTranslationItems();
@@ -112,6 +113,7 @@ export default function PdfDocumentReader({
         <TranslationPanel
           items={translationItems}
           onUpdateItem={updateTranslationItem}
+          onMarkItemError={markTranslationItemError}
           onRemoveItem={removeTranslationItem}
           onClearItems={clearTranslationItems}
         />

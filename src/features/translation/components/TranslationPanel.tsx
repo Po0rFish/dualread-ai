@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { mockTranslateText } from '../services/mockTranslator';
+import { translationConfig } from '../config/translationConfig';
+import { translateText } from '../services/translationService';
 import type { TranslationItem } from '../types/translation';
 
 interface TranslationPanelProps {
@@ -8,6 +9,10 @@ interface TranslationPanelProps {
     itemId: string,
     translatedText: string,
   ) => Promise<void>;
+  readonly onMarkItemError: (
+    itemId: string,
+    errorMessage: string,
+  ) => void;
   readonly onRemoveItem: (itemId: string) => void;
   readonly onClearItems: () => void;
 }
@@ -43,9 +48,18 @@ const getTranslateButtonText = (
   return 'Translate';
 };
 
+const getErrorMessage = (error: unknown): string => {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return 'Translation failed.';
+};
+
 export default function TranslationPanel({
   items,
   onUpdateItem,
+  onMarkItemError,
   onRemoveItem,
   onClearItems,
 }: TranslationPanelProps) {
@@ -56,7 +70,6 @@ export default function TranslationPanel({
   const isItemTranslating = (itemId: string): boolean => {
     return translatingItemIds.includes(itemId);
   };
-
 
   const startItemTranslation = (itemId: string): void => {
     setTranslatingItemIds((currentItemIds) => {
@@ -81,12 +94,15 @@ export default function TranslationPanel({
       try {
         startItemTranslation(item.id);
 
-        const translatedText = await mockTranslateText({
+        const translationResult = await translateText({
           sourceText: item.sourceText,
           targetLanguage: item.targetLanguage,
+          provider: translationConfig.defaultProvider,
         });
 
-        await onUpdateItem(item.id, translatedText);
+        await onUpdateItem(item.id, translationResult.translatedText);
+      } catch (error) {
+        onMarkItemError(item.id, getErrorMessage(error));
       } finally {
         finishItemTranslation(item.id);
       }
@@ -165,6 +181,12 @@ export default function TranslationPanel({
                   ) : (
                     <p className="translation-panel__placeholder">
                       Not translated yet.
+                    </p>
+                  )}
+
+                  {item.translationError && (
+                    <p className="translation-panel__error">
+                      {item.translationError}
                     </p>
                   )}
                 </div>
