@@ -13,16 +13,24 @@ const createTranslationId = ({
   documentId,
   sourceTextHash,
   targetLanguage,
+  provider,
+}: GetTranslationParams): string => {
+  return `${documentId}:${sourceTextHash}:${targetLanguage}:${provider}`;
+};
+const createLegacyTranslationId = ({
+  documentId,
+  sourceTextHash,
+  targetLanguage,
 }: GetTranslationParams): string => {
   return `${documentId}:${sourceTextHash}:${targetLanguage}`;
 };
-
 export const cacheRepo = {
   async save({
     documentId,
     sourceText,
     sourceTextHash,
     targetLanguage,
+    provider,
     translatedText,
   }: SaveTranslationParams): Promise<TranslationCacheItem> {
     const database = await getTranslationsDatabase();
@@ -31,6 +39,7 @@ export const cacheRepo = {
       documentId,
       sourceTextHash,
       targetLanguage,
+      provider,
     });
 
     const existingItem = await database.get(TRANSLATIONS_STORE, id);
@@ -42,6 +51,7 @@ export const cacheRepo = {
       sourceText,
       sourceTextHash,
       targetLanguage,
+      provider,
       translatedText,
       createdAt: existingItem?.createdAt ?? now,
       updatedAt: now,
@@ -56,6 +66,7 @@ export const cacheRepo = {
     documentId,
     sourceTextHash,
     targetLanguage,
+    provider,
   }: GetTranslationParams): Promise<TranslationCacheItem | null> {
     const database = await getTranslationsDatabase();
 
@@ -63,11 +74,46 @@ export const cacheRepo = {
       documentId,
       sourceTextHash,
       targetLanguage,
+      provider,
     });
 
     const item = await database.get(TRANSLATIONS_STORE, id);
 
-    return item ?? null;
+    if (item) {
+      return item;
+    }
+
+    const legacyId = createLegacyTranslationId({
+      documentId,
+      sourceTextHash,
+      targetLanguage,
+      provider,
+    });
+
+    const legacyItem = await database.get(TRANSLATIONS_STORE, legacyId);
+
+    if (!legacyItem) {
+      return null;
+    }
+
+    if (legacyItem.provider && legacyItem.provider !== provider) {
+      return null;
+    }
+
+    if (provider !== 'mock') {
+      return null;
+    }
+
+    const migratedItem: TranslationCacheItem = {
+      ...legacyItem,
+      id,
+      provider,
+      updatedAt: new Date().toISOString(),
+    };
+
+    await database.put(TRANSLATIONS_STORE, migratedItem);
+
+    return migratedItem;
   },
 
   async getByDocumentId(

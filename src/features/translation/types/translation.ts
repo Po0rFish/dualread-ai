@@ -1,4 +1,5 @@
 import type { TranslationLanguage } from './cache';
+import type { TranslationProvider } from './service';
 
 export type { TranslationLanguage } from './cache';
 
@@ -22,6 +23,7 @@ export interface TranslationItem {
   readonly translationStatus: TranslationItemStatus;
   readonly translationError: string | null;
   readonly targetLanguage: TranslationLanguage;
+  readonly provider: TranslationProvider;
 
   readonly documentId?: string;
   readonly sourceTextHash?: string;

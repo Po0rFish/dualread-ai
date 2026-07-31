@@ -5,6 +5,7 @@ import type {
   TranslationLanguage,
 } from '../types/cache';
 import type { TranslationSourceSegment } from '../types/segment';
+import type { TranslationProvider } from '../types/service';
 import type {
   TranslationItem,
   TranslationSourceType,
@@ -13,6 +14,10 @@ import type {
 interface CacheableTranslationItem extends TranslationItem {
   readonly documentId: string;
   readonly sourceTextHash: string;
+}
+
+interface UseTranslationItemsParams {
+  readonly provider: TranslationProvider;
 }
 
 interface UseTranslationItemsResult {
@@ -34,34 +39,50 @@ interface UseTranslationItemsResult {
 
 const TARGET_LANGUAGE: TranslationLanguage = 'english';
 
-const createFallbackItemId = (
-  segment: TranslationSourceSegment,
-): string => {
-  return `${segment.id}:${TARGET_LANGUAGE}`;
+const createFallbackItemId = ({
+  segment,
+  provider,
+}: {
+  readonly segment: TranslationSourceSegment;
+  readonly provider: TranslationProvider;
+}): string => {
+  return `${segment.id}:${TARGET_LANGUAGE}:${provider}`;
 };
 
 const createCachedItemId = ({
   documentId,
   sourceTextHash,
   targetLanguage,
+  provider,
 }: {
   readonly documentId: string;
   readonly sourceTextHash: string;
   readonly targetLanguage: TranslationLanguage;
+  readonly provider: TranslationProvider;
 }): string => {
-  return `${documentId}:${sourceTextHash}:${targetLanguage}`;
+  return `${documentId}:${sourceTextHash}:${targetLanguage}:${provider}`;
 };
 
-const createItemId = (segment: TranslationSourceSegment): string => {
+const createItemId = ({
+  segment,
+  provider,
+}: {
+  readonly segment: TranslationSourceSegment;
+  readonly provider: TranslationProvider;
+}): string => {
   if (segment.documentId && segment.sourceTextHash) {
     return createCachedItemId({
       documentId: segment.documentId,
       sourceTextHash: segment.sourceTextHash,
       targetLanguage: TARGET_LANGUAGE,
+      provider,
     });
   }
 
-  return createFallbackItemId(segment);
+  return createFallbackItemId({
+    segment,
+    provider,
+  });
 };
 
 const getSourceType = (
@@ -77,18 +98,24 @@ const getSourceType = (
 const createItemFromSegment = ({
   segment,
   cachedTranslation,
+  provider,
 }: {
   readonly segment: TranslationSourceSegment;
   readonly cachedTranslation: TranslationCacheItem | null;
+  readonly provider: TranslationProvider;
 }): TranslationItem => {
   return {
-    id: createItemId(segment),
+    id: createItemId({
+      segment,
+      provider,
+    }),
     sourceText: segment.text,
     sourceType: getSourceType(segment),
     translatedText: cachedTranslation?.translatedText ?? null,
     translationStatus: cachedTranslation ? 'cached' : 'idle',
     translationError: null,
     targetLanguage: TARGET_LANGUAGE,
+    provider,
     documentId: segment.documentId,
     sourceTextHash: segment.sourceTextHash,
     pageNumber: segment.pageNumber,
@@ -101,7 +128,9 @@ const isCacheableTranslationItem = (
   return Boolean(item?.documentId && item.sourceTextHash);
 };
 
-export const useTranslationItems = (): UseTranslationItemsResult => {
+export const useTranslationItems = ({
+  provider,
+}: UseTranslationItemsParams): UseTranslationItemsResult => {
   const [translationItems, setTranslationItems] = useState<
     TranslationItem[]
   >([]);
@@ -139,6 +168,7 @@ export const useTranslationItems = (): UseTranslationItemsResult => {
               documentId: segment.documentId,
               sourceTextHash: segment.sourceTextHash,
               targetLanguage: TARGET_LANGUAGE,
+              provider,
             })
             : null;
 
@@ -146,13 +176,14 @@ export const useTranslationItems = (): UseTranslationItemsResult => {
           createItemFromSegment({
             segment,
             cachedTranslation,
+            provider,
           }),
         );
       };
 
       void loadCachedTranslation();
     },
-    [addTranslationItem],
+    [addTranslationItem, provider],
   );
 
   const updateTranslationItem = useCallback(
@@ -173,6 +204,7 @@ export const useTranslationItems = (): UseTranslationItemsResult => {
             translatedText,
             translationStatus: 'translated',
             translationError: null,
+            provider,
           };
         });
       });
@@ -186,10 +218,11 @@ export const useTranslationItems = (): UseTranslationItemsResult => {
         sourceText: itemToCache.sourceText,
         sourceTextHash: itemToCache.sourceTextHash,
         targetLanguage: itemToCache.targetLanguage,
+        provider,
         translatedText,
       });
     },
-    [translationItems],
+    [provider, translationItems],
   );
 
   const markTranslationItemError = useCallback(
@@ -204,11 +237,12 @@ export const useTranslationItems = (): UseTranslationItemsResult => {
             ...item,
             translationStatus: 'error',
             translationError: errorMessage,
+            provider,
           };
         });
       });
     },
-    [],
+    [provider],
   );
 
   const removeTranslationItem = useCallback((itemId: string): void => {

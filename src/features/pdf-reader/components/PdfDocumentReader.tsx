@@ -9,7 +9,8 @@ import ReaderNav from './ReaderNav';
 import SelectedSegment from './SelectedSegment';
 import SelectedSentence from './SelectedSentence';
 import TranslationActions from './TranslationActions';
-
+import { useTranslationProvider } from '../../translation/hooks/useTranslationProvider';
+import type { TranslationProvider } from '../../translation/types/service';
 interface PdfDocumentReaderProps {
   readonly file: File;
   readonly documentId?: string;
@@ -39,6 +40,7 @@ export default function PdfDocumentReader({
     documentId,
     onPageChange: handlePageChange,
   });
+  const { selectedProvider, providerOptions, selectProvider } = useTranslationProvider();
 
   const {
     translationItems,
@@ -47,7 +49,9 @@ export default function PdfDocumentReader({
     markTranslationItemError,
     removeTranslationItem,
     clearTranslationItems,
-  } = useTranslationItems();
+  } = useTranslationItems({
+    provider: selectedProvider,
+  });
 
   const {
     selectedSentence,
@@ -60,7 +64,18 @@ export default function PdfDocumentReader({
     file,
     selectedSegment,
   });
+  const handleProviderChange = useCallback(
+    (provider: TranslationProvider): void => {
+      if (provider === selectedProvider) {
+        return;
+      }
 
+      clearTranslationItems();
+      setSelectedSegment(null);
+      selectProvider(provider);
+    },
+    [clearTranslationItems, selectProvider, selectedProvider],
+  );
   return (
     <section
       className="pdf-document-reader"
@@ -109,9 +124,11 @@ export default function PdfDocumentReader({
             onSelectSegment={setSelectedSegment}
           />
         </div>
-
         <TranslationPanel
           items={translationItems}
+          selectedProvider={selectedProvider}
+          providerOptions={providerOptions}
+          onProviderChange={handleProviderChange}
           onUpdateItem={updateTranslationItem}
           onMarkItemError={markTranslationItemError}
           onRemoveItem={removeTranslationItem}
