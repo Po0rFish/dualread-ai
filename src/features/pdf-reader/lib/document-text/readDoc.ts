@@ -25,6 +25,9 @@ export const readDoc = async ({
       async (_, pageIndex) => {
         const pageNumber = pageIndex + 1;
         const page = await pdfDocument.getPage(pageNumber);
+        const viewport = page.getViewport({
+          scale: 1,
+        });
         const segments = await getPageSegments({
           page,
           pageNumber,
@@ -32,6 +35,7 @@ export const readDoc = async ({
 
         return {
           pageNumber,
+          pageHeight: viewport.height,
           segments,
         };
       },

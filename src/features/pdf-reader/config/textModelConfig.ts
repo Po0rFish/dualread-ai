@@ -1,0 +1,1 @@
+export const TEXT_MODEL_VERSION = 1;

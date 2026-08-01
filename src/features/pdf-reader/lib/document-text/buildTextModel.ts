@@ -9,8 +9,9 @@ import type {
   PdfSentencePart,
 } from '../../types/documentText';
 import { buildSentences } from './buildSentences';
-
+import { TEXT_MODEL_VERSION } from '../../config/textModelConfig';
 interface BuildTextModelPage {
+  readonly pageHeight: number;
   readonly pageNumber: number;
   readonly segments: ClassifiedPdfTextSegment[];
 }
@@ -57,7 +58,10 @@ const createSentenceParts = (
         return {
           pageNumber: page.pageNumber,
           segmentId: segment.id,
+          segmentType: segment.type,
           text: segment.text,
+          lineY: segment.lineY,
+          pageHeight: page.pageHeight,
         };
       });
   });
@@ -91,6 +95,7 @@ export const buildTextModel = async ({
 
   return {
     documentId,
+    modelVersion: TEXT_MODEL_VERSION,
     pages: groupSentencesByPage(pages, sentences),
     sentences,
     createdAt: new Date().toISOString(),

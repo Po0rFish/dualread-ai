@@ -8,6 +8,7 @@ import {
   LibraryDocumentsLimitReachedError,
   MAX_LIBRARY_DOCUMENTS,
 } from '../repositories/documentRepository';
+import { textModelRepo } from '../../pdf-reader/repositories/textModelRepo';
 import type {
   CreateLibraryDocumentParams,
   LibraryDocument,
@@ -137,6 +138,7 @@ export const useLibraryDocuments = (): UseLibraryDocumentsResult => {
 
       try {
         await documentsRepository.delete(documentId);
+        await textModelRepo.delete(documentId);
         deleteReadingProgress(documentId);
 
         const nextDocuments = await documentsRepository.getAllInfo();

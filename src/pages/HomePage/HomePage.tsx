@@ -83,6 +83,7 @@ export default function HomePage() {
       {selectedDocumentFile && (
         <section className="home-page__reader">
           <PdfDocumentReader
+            key={selectedDocumentFile.documentId}
             file={selectedDocumentFile.file}
             documentId={selectedDocumentFile.documentId}
           />

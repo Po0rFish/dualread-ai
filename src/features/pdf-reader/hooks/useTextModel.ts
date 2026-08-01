@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import type { PdfDocumentTextModel } from '../types/documentText';
 import { readDoc } from '../lib/document-text/readDoc';
+import { textModelRepo } from '../repositories/textModelRepo';
+import type { PdfDocumentTextModel } from '../types/documentText';
 
 interface UseTextModelParams {
   readonly documentId?: string;
@@ -27,21 +28,36 @@ export const useTextModel = ({
   useEffect(() => {
     let isCancelled = false;
 
-    const buildModel = async (): Promise<void> => {
+    const loadTextModel = async (): Promise<void> => {
       if (!documentId) {
         setTextModel(null);
         setTextModelError(null);
+        setIsTextModelLoading(false);
         return;
       }
 
       try {
         setIsTextModelLoading(true);
+        setTextModel(null);
         setTextModelError(null);
+
+        const cachedTextModel = await textModelRepo.get(documentId);
+
+        if (isCancelled) {
+          return;
+        }
+
+        if (cachedTextModel) {
+          setTextModel(cachedTextModel);
+          return;
+        }
 
         const nextTextModel = await readDoc({
           documentId,
           file,
         });
+
+        await textModelRepo.save(nextTextModel);
 
         if (isCancelled) {
           return;
@@ -53,10 +69,10 @@ export const useTextModel = ({
           return;
         }
 
-        console.error('[useTextModel] Build text model error:', error);
+        console.error('[useTextModel] Load text model error:', error);
 
         setTextModel(null);
-        setTextModelError('Text model could not be built.');
+        setTextModelError('Text model could not be loaded.');
       } finally {
         if (!isCancelled) {
           setIsTextModelLoading(false);
@@ -64,7 +80,7 @@ export const useTextModel = ({
       }
     };
 
-    void buildModel();
+    void loadTextModel();
 
     return () => {
       isCancelled = true;
