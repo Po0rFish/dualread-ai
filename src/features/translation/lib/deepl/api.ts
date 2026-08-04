@@ -71,3 +71,15 @@ export const isDeepLTranslateResponse = (
 
   return value.translations.every(isDeepLTranslationResponseItem);
 };
+
+export const getDeepLTranslatedText = (
+  response: DeepLTranslateResponse,
+): string => {
+  const translatedText = response.translations[0]?.text.trim();
+
+  if (!translatedText) {
+    throw new Error('DeepL response does not contain translated text.');
+  }
+
+  return translatedText;
+};
