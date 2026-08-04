@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslationCredentials } from '../context/useCred';
 import { translateText } from '../services/translationService';
 import type {
   TranslationProvider,
@@ -76,6 +77,13 @@ export default function TranslationPanel({
     string[]
   >([]);
 
+  const {
+    deeplApiKey,
+    setDeepLApiKey,
+    clearDeepLApiKey,
+    getApiKeyForProvider,
+  } = useTranslationCredentials();
+
   const isItemTranslating = (itemId: string): boolean => {
     return translatingItemIds.includes(itemId);
   };
@@ -107,6 +115,7 @@ export default function TranslationPanel({
           sourceText: item.sourceText,
           targetLanguage: item.targetLanguage,
           provider: selectedProvider,
+          apiKey: getApiKeyForProvider(selectedProvider),
         });
 
         await onUpdateItem(item.id, translationResult.translatedText);
@@ -167,6 +176,41 @@ export default function TranslationPanel({
           }
         </p>
       </div>
+
+      {selectedProvider === 'deepl' && (
+        <div className="translation-panel__credentials">
+          <label className="translation-panel__credentials-label">
+            <span className="translation-panel__credentials-text">
+              DeepL API key
+            </span>
+
+            <input
+              className="translation-panel__credentials-input"
+              type="password"
+              value={deeplApiKey}
+              onChange={(event) => {
+                setDeepLApiKey(event.target.value);
+              }}
+              placeholder="Paste your DeepL API key"
+              autoComplete="off"
+            />
+          </label>
+
+          {deeplApiKey && (
+            <button
+              type="button"
+              className="translation-panel__credentials-clear-button"
+              onClick={clearDeepLApiKey}
+            >
+              Clear key
+            </button>
+          )}
+
+          <p className="translation-panel__credentials-hint">
+            Key is kept only in memory and disappears after page reload.
+          </p>
+        </div>
+      )}
 
       {items.length === 0 && (
         <p className="translation-panel__empty">

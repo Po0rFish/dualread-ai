@@ -1,5 +1,8 @@
 import { createDeepLRequestBody } from '../../lib/deepl/api';
-import { createProviderNotImplementedError } from '../../lib/translationErrors';
+import {
+  createMissingApiKeyError,
+  createProviderNotImplementedError,
+} from '../../lib/translationErrors';
 import type {
   TranslateTextResult,
   TranslationProviderTranslateParams,
@@ -9,7 +12,16 @@ export const deeplProvider = {
   async translate({
     sourceText,
     targetLanguage,
+    apiKey,
   }: TranslationProviderTranslateParams): Promise<TranslateTextResult> {
+    const trimmedApiKey = apiKey?.trim();
+
+    if (!trimmedApiKey) {
+      throw createMissingApiKeyError({
+        provider: 'deepl',
+      });
+    }
+
     const requestBody = createDeepLRequestBody({
       sourceText,
       targetLanguage,
@@ -17,7 +29,7 @@ export const deeplProvider = {
 
     throw createProviderNotImplementedError({
       provider: 'deepl',
-      details: `Target language "${requestBody.target_lang}". Source text length: ${sourceText.length}.`,
+      details: `API key is provided. Target language "${requestBody.target_lang}". Source text length: ${sourceText.length}.`,
     });
   },
 };

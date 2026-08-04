@@ -11,6 +11,7 @@ export interface TranslationProviderOption {
 export interface TranslationProviderTranslateParams {
   readonly sourceText: string;
   readonly targetLanguage: TranslationLanguage;
+  readonly apiKey?: string;
 }
 
 export interface TranslateTextParams
