@@ -1,3 +1,8 @@
+import {
+  DEEPL_PROVIDER_NAME,
+  getDeepLTargetLanguage,
+} from '../../config/deeplConfig';
+import { createProviderNotImplementedError } from '../../lib/translationErrors';
 import type {
   TranslateTextResult,
   TranslationProviderTranslateParams,
@@ -8,8 +13,11 @@ export const deeplProvider = {
     sourceText,
     targetLanguage,
   }: TranslationProviderTranslateParams): Promise<TranslateTextResult> {
-    throw new Error(
-      `DeepL provider is not implemented yet for target language "${targetLanguage}". Source text length: ${sourceText.length}.`,
-    );
+    const deeplTargetLanguage = getDeepLTargetLanguage(targetLanguage);
+
+    throw createProviderNotImplementedError({
+      provider: 'deepl',
+      details: `${DEEPL_PROVIDER_NAME} target language "${deeplTargetLanguage}". Source text length: ${sourceText.length}.`,
+    });
   },
 };

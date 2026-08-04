@@ -1,3 +1,4 @@
+import { createProviderNotImplementedError } from '../../lib/translationErrors';
 import type {
   TranslateTextResult,
   TranslationProviderTranslateParams,
@@ -8,8 +9,9 @@ export const openAiProvider = {
     sourceText,
     targetLanguage,
   }: TranslationProviderTranslateParams): Promise<TranslateTextResult> {
-    throw new Error(
-      `OpenAI provider is not implemented yet for target language "${targetLanguage}". Source text length: ${sourceText.length}.`,
-    );
+    throw createProviderNotImplementedError({
+      provider: 'openai',
+      details: `Target language "${targetLanguage}". Source text length: ${sourceText.length}.`,
+    });
   },
 };
