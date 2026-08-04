@@ -8,7 +8,12 @@ import type {
   TranslationItem,
   TranslationSourceType,
 } from '../types/translation';
-import { createTranslationItemId } from './translationItemIds';
+
+interface CreateTranslationItemIdParams {
+  readonly segment: TranslationSourceSegment;
+  readonly targetLanguage: TranslationLanguage;
+  readonly provider: TranslationProvider;
+}
 
 interface CreateTranslationItemParams {
   readonly segment: TranslationSourceSegment;
@@ -16,6 +21,18 @@ interface CreateTranslationItemParams {
   readonly targetLanguage: TranslationLanguage;
   readonly provider: TranslationProvider;
 }
+
+const createTranslationItemId = ({
+  segment,
+  targetLanguage,
+  provider,
+}: CreateTranslationItemIdParams): string => {
+  if (segment.documentId && segment.sourceTextHash) {
+    return `${segment.documentId}:${segment.sourceTextHash}:${targetLanguage}:${provider}`;
+  }
+
+  return `${segment.id}:${targetLanguage}:${provider}`;
+};
 
 const getSourceType = (
   segment: TranslationSourceSegment,

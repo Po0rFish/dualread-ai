@@ -1,7 +1,4 @@
-import {
-  DEEPL_PROVIDER_NAME,
-  getDeepLTargetLanguage,
-} from '../../config/deeplConfig';
+import { createDeepLRequestBody } from '../../lib/deepl/api';
 import { createProviderNotImplementedError } from '../../lib/translationErrors';
 import type {
   TranslateTextResult,
@@ -13,11 +10,14 @@ export const deeplProvider = {
     sourceText,
     targetLanguage,
   }: TranslationProviderTranslateParams): Promise<TranslateTextResult> {
-    const deeplTargetLanguage = getDeepLTargetLanguage(targetLanguage);
+    const requestBody = createDeepLRequestBody({
+      sourceText,
+      targetLanguage,
+    });
 
     throw createProviderNotImplementedError({
       provider: 'deepl',
-      details: `${DEEPL_PROVIDER_NAME} target language "${deeplTargetLanguage}". Source text length: ${sourceText.length}.`,
+      details: `Target language "${requestBody.target_lang}". Source text length: ${sourceText.length}.`,
     });
   },
 };
