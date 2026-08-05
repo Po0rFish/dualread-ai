@@ -1,0 +1,43 @@
+import type { TranslationItem } from '../../types/translation';
+
+export const DEEPL_API_KEY_HELP_URL =
+  'https://support.deepl.com/hc/en-us/articles/360020695820-API-key-for-DeepL-API';
+
+export const getStatusText = (item: TranslationItem): string => {
+  if (item.translationStatus === 'cached') {
+    return 'Saved translation';
+  }
+
+  if (item.translationStatus === 'translated') {
+    return 'New translation';
+  }
+
+  if (item.translationStatus === 'error') {
+    return 'Translation error';
+  }
+
+  return 'Not translated yet';
+};
+
+export const getTranslateButtonText = (
+  item: TranslationItem,
+  isTranslating: boolean,
+): string => {
+  if (isTranslating) {
+    return 'Translating...';
+  }
+
+  if (item.translatedText) {
+    return 'Retranslate';
+  }
+
+  return 'Translate';
+};
+
+export const getErrorMessage = (error: unknown): string => {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return 'Translation failed.';
+};
