@@ -11,6 +11,13 @@ interface CreateDeepLRequestBodyParams {
   readonly targetLanguage: TranslationLanguage;
 }
 
+interface CreateDeepLProxyRequestInitParams
+  extends CreateDeepLRequestBodyParams {
+  readonly apiKey: string;
+}
+
+const DEEPL_AUTH_HEADER_PREFIX = 'DeepL-Auth-Key';
+
 const isRecord = (value: unknown): value is Record<string, unknown> => {
   return typeof value === 'object' && value !== null;
 };
@@ -51,6 +58,26 @@ export const createDeepLRequestBody = ({
     text: [sourceText],
     target_lang: getDeepLTargetLanguage(targetLanguage),
     show_billed_characters: true,
+  };
+};
+
+export const createDeepLProxyRequestInit = ({
+  sourceText,
+  targetLanguage,
+  apiKey,
+}: CreateDeepLProxyRequestInitParams): RequestInit => {
+  return {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `${DEEPL_AUTH_HEADER_PREFIX} ${apiKey}`,
+    },
+    body: JSON.stringify(
+      createDeepLRequestBody({
+        sourceText,
+        targetLanguage,
+      }),
+    ),
   };
 };
 

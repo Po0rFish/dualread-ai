@@ -1,4 +1,5 @@
-import { createDeepLRequestBody } from '../../lib/deepl/api';
+import { DEEPL_TRANSLATE_PROXY_URL } from '../../config/deeplConfig';
+import { createDeepLProxyRequestInit } from '../../lib/deepl/api';
 import {
   createMissingApiKeyError,
   createProviderNotImplementedError,
@@ -22,14 +23,15 @@ export const deeplProvider = {
       });
     }
 
-    const requestBody = createDeepLRequestBody({
+    const proxyRequestInit = createDeepLProxyRequestInit({
       sourceText,
       targetLanguage,
+      apiKey: trimmedApiKey,
     });
 
     throw createProviderNotImplementedError({
       provider: 'deepl',
-      details: `API key is provided. Target language "${requestBody.target_lang}". Source text length: ${sourceText.length}.`,
+      details: `Proxy request is prepared for "${DEEPL_TRANSLATE_PROXY_URL}". Method "${proxyRequestInit.method ?? 'POST'}". Source text length: ${sourceText.length}.`,
     });
   },
 };
