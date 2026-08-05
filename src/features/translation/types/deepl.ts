@@ -22,4 +22,5 @@ export type DeepLProxyTranslateResponse = DeepLTranslateResponse;
 export interface DeepLProxyErrorResponse {
   readonly error: string;
   readonly status?: number;
+  readonly details?: string;
 }

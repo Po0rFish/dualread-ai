@@ -1,6 +1,8 @@
 import { getDeepLTargetLanguage } from '../../config/deeplConfig';
 import type { TranslationLanguage } from '../../types/cache';
+
 import type {
+  DeepLProxyErrorResponse,
   DeepLTranslateRequestBody,
   DeepLTranslateResponse,
   DeepLTranslationResponseItem,
@@ -97,6 +99,34 @@ export const isDeepLTranslateResponse = (
   }
 
   return value.translations.every(isDeepLTranslationResponseItem);
+};
+
+export const isDeepLProxyErrorResponse = (
+  value: unknown,
+): value is DeepLProxyErrorResponse => {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  if (typeof value.error !== 'string') {
+    return false;
+  }
+
+  if (
+    value.status !== undefined &&
+    typeof value.status !== 'number'
+  ) {
+    return false;
+  }
+
+  if (
+    value.details !== undefined &&
+    typeof value.details !== 'string'
+  ) {
+    return false;
+  }
+
+  return true;
 };
 
 export const getDeepLTranslatedText = (

@@ -2,6 +2,7 @@ import { DEEPL_TRANSLATE_PROXY_URL } from '../../config/deeplConfig';
 import {
   createDeepLProxyRequestInit,
   getDeepLTranslatedText,
+  isDeepLProxyErrorResponse,
   isDeepLTranslateResponse,
 } from '../../lib/deepl/api';
 import {
@@ -41,6 +42,35 @@ const readResponseData = async (
   }
 };
 
+const readErrorResponseData = async (
+  response: Response,
+): Promise<unknown> => {
+  try {
+    return await response.json();
+  } catch {
+    return null;
+  }
+};
+
+const getRequestErrorDetails = async (
+  response: Response,
+): Promise<string | undefined> => {
+  const responseData = await readErrorResponseData(response);
+
+  if (!isDeepLProxyErrorResponse(responseData)) {
+    return undefined;
+  }
+
+  const details = responseData.details ?? responseData.error;
+  const trimmedDetails = details.trim();
+
+  if (!trimmedDetails) {
+    return undefined;
+  }
+
+  return trimmedDetails;
+};
+
 export const deeplProvider = {
   async translate({
     sourceText,
@@ -67,6 +97,7 @@ export const deeplProvider = {
       throw createTranslationRequestError({
         provider: DEEPL_PROVIDER,
         status: response.status,
+        details: await getRequestErrorDetails(response),
       });
     }
 

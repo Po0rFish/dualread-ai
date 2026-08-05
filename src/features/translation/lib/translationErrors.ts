@@ -16,6 +16,7 @@ interface CreateTranslationNetworkErrorParams {
 interface CreateTranslationRequestErrorParams {
   readonly provider: TranslationProvider;
   readonly status: number;
+  readonly details?: string;
 }
 
 interface CreateUnexpectedResponseErrorParams {
@@ -50,10 +51,13 @@ export const createTranslationNetworkError = ({
 export const createTranslationRequestError = ({
   provider,
   status,
+  details,
 }: CreateTranslationRequestErrorParams): Error => {
-  return new Error(
-    `${provider} translation request failed with status ${status}.`,
-  );
+  const message = details
+    ? `${provider} translation request failed with status ${status}. ${details}`
+    : `${provider} translation request failed with status ${status}.`;
+
+  return new Error(message);
 };
 
 export const createUnexpectedResponseError = ({
