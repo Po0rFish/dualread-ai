@@ -9,6 +9,10 @@ interface CreateMissingApiKeyErrorParams {
   readonly provider: TranslationProvider;
 }
 
+interface CreateTranslationNetworkErrorParams {
+  readonly provider: TranslationProvider;
+}
+
 interface CreateTranslationRequestErrorParams {
   readonly provider: TranslationProvider;
   readonly status: number;
@@ -33,6 +37,14 @@ export const createMissingApiKeyError = ({
   provider,
 }: CreateMissingApiKeyErrorParams): Error => {
   return new Error(`${provider} API key is missing.`);
+};
+
+export const createTranslationNetworkError = ({
+  provider,
+}: CreateTranslationNetworkErrorParams): Error => {
+  return new Error(
+    `${provider} translation request could not be completed.`,
+  );
 };
 
 export const createTranslationRequestError = ({
