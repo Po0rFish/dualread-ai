@@ -3,6 +3,7 @@ import { DEEPL_API_KEY_HELP_URL } from './helpers';
 interface CredProps {
   readonly deeplApiKey: string;
   readonly hasDeepLApiKey: boolean;
+  readonly isDisabled: boolean;
   readonly setDeepLApiKey: (apiKey: string) => void;
   readonly clearDeepLApiKey: () => void;
 }
@@ -10,9 +11,14 @@ interface CredProps {
 export default function Cred({
   deeplApiKey,
   hasDeepLApiKey,
+  isDisabled,
   setDeepLApiKey,
   clearDeepLApiKey,
 }: CredProps) {
+  const disabledTitle = isDisabled
+    ? 'Wait until translation request finishes.'
+    : undefined;
+
   return (
     <div className="translation-panel__credentials">
       <label className="translation-panel__credentials-label">
@@ -26,7 +32,12 @@ export default function Cred({
           name="deepl-api-key"
           id="deepl-api-key"
           value={deeplApiKey}
+          title={disabledTitle}
           onChange={(event) => {
+            if (isDisabled) {
+              return;
+            }
+
             setDeepLApiKey(event.target.value);
           }}
           placeholder="Paste your DeepL API key"
@@ -36,6 +47,7 @@ export default function Cred({
           spellCheck={false}
           data-lpignore="true"
           data-1p-ignore="true"
+          disabled={isDisabled}
         />
       </label>
 
@@ -43,7 +55,15 @@ export default function Cred({
         <button
           type="button"
           className="translation-panel__credentials-clear-button"
-          onClick={clearDeepLApiKey}
+          title={disabledTitle}
+          onClick={() => {
+            if (isDisabled) {
+              return;
+            }
+
+            clearDeepLApiKey();
+          }}
+          disabled={isDisabled}
         >
           Clear key
         </button>

@@ -6,12 +6,14 @@ import type {
 interface ProviderProps {
   readonly selectedProvider: TranslationProvider;
   readonly providerOptions: TranslationProviderOption[];
+  readonly isDisabled: boolean;
   readonly onProviderChange: (provider: TranslationProvider) => void;
 }
 
 export default function Provider({
   selectedProvider,
   providerOptions,
+  isDisabled,
   onProviderChange,
 }: ProviderProps) {
   const selectedProviderDescription =
@@ -29,9 +31,15 @@ export default function Provider({
         <select
           className="translation-panel__provider-select"
           value={selectedProvider}
+          title={
+            isDisabled
+              ? 'Wait until translation request finishes.'
+              : undefined
+          }
           onChange={(event) => {
             onProviderChange(event.target.value as TranslationProvider);
           }}
+          disabled={isDisabled}
         >
           {providerOptions.map((option) => {
             return (

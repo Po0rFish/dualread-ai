@@ -50,6 +50,7 @@ export default function Panel({
     getApiKeyForProvider,
   } = useTranslationCredentials();
 
+  const hasActiveTranslation = translatingItemIds.length > 0;
   const isDeepLSelected = selectedProvider === 'deepl';
   const hasDeepLApiKey = deeplApiKey.trim().length > 0;
   const isTranslationProviderReady =
@@ -77,8 +78,26 @@ export default function Panel({
     });
   };
 
+  const handleProviderChange = (
+    provider: TranslationProvider,
+  ): void => {
+    if (hasActiveTranslation) {
+      return;
+    }
+
+    onProviderChange(provider);
+  };
+
+  const handleClearItemsClick = (): void => {
+    if (hasActiveTranslation) {
+      return;
+    }
+
+    onClearItems();
+  };
+
   const handleTranslateClick = (item: TranslationItem): void => {
-    if (!isTranslationProviderReady) {
+    if (!isTranslationProviderReady || isItemTranslating(item.id)) {
       return;
     }
 
@@ -113,7 +132,13 @@ export default function Panel({
           <button
             type="button"
             className="translation-panel__clear-button"
-            onClick={onClearItems}
+            title={
+              hasActiveTranslation
+                ? 'Wait until translation request finishes.'
+                : undefined
+            }
+            onClick={handleClearItemsClick}
+            disabled={hasActiveTranslation}
           >
             Clear
           </button>
@@ -123,13 +148,15 @@ export default function Panel({
       <Provider
         selectedProvider={selectedProvider}
         providerOptions={providerOptions}
-        onProviderChange={onProviderChange}
+        isDisabled={hasActiveTranslation}
+        onProviderChange={handleProviderChange}
       />
 
       {isDeepLSelected && (
         <Cred
           deeplApiKey={deeplApiKey}
           hasDeepLApiKey={hasDeepLApiKey}
+          isDisabled={hasActiveTranslation}
           setDeepLApiKey={setDeepLApiKey}
           clearDeepLApiKey={clearDeepLApiKey}
         />

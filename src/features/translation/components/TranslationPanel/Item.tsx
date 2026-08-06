@@ -16,19 +16,38 @@ export default function Item({
   onTranslate,
   onRemove,
 }: ItemProps) {
+  const shouldShowTranslationError =
+    !isTranslating && item.translationError;
+
+  const placeholderText = isTranslating
+    ? 'Translation in progress...'
+    : 'Not translated yet.';
+
   return (
-    <article className="translation-panel__item">
+    <article
+      className="translation-panel__item"
+      aria-busy={isTranslating}
+    >
       <header className="translation-panel__item-header">
-        <small className="translation-panel__item-meta">
-          {item.sourceType} · {getStatusText(item)}
+        <small
+          className="translation-panel__item-meta"
+          aria-live="polite"
+        >
+          {item.sourceType} · {getStatusText(item, isTranslating)}
         </small>
 
         <button
           type="button"
           className="translation-panel__remove-button"
+          title={
+            isTranslating
+              ? 'Wait until translation request finishes.'
+              : undefined
+          }
           onClick={() => {
             onRemove(item.id);
           }}
+          disabled={isTranslating}
         >
           Remove
         </button>
@@ -51,12 +70,12 @@ export default function Item({
           </p>
         ) : (
           <p className="translation-panel__placeholder">
-            Not translated yet.
+            {placeholderText}
           </p>
         )}
 
-        {item.translationError && (
-          <p className="translation-panel__error">
+        {shouldShowTranslationError && (
+          <p className="translation-panel__error" role="alert">
             {item.translationError}
           </p>
         )}

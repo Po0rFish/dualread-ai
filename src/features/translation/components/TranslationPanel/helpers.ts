@@ -3,7 +3,18 @@ import type { TranslationItem } from '../../types/translation';
 export const DEEPL_API_KEY_HELP_URL =
   'https://support.deepl.com/hc/en-us/articles/360020695820-API-key-for-DeepL-API';
 
-export const getStatusText = (item: TranslationItem): string => {
+export const getStatusText = (
+  item: TranslationItem,
+  isTranslating: boolean,
+): string => {
+  if (isTranslating && item.translationStatus === 'error') {
+    return 'Trying again...';
+  }
+
+  if (isTranslating) {
+    return 'Translating...';
+  }
+
   if (item.translationStatus === 'cached') {
     return 'Saved translation';
   }
@@ -23,8 +34,16 @@ export const getTranslateButtonText = (
   item: TranslationItem,
   isTranslating: boolean,
 ): string => {
+  if (isTranslating && item.translationStatus === 'error') {
+    return 'Retrying...';
+  }
+
   if (isTranslating) {
     return 'Translating...';
+  }
+
+  if (item.translationStatus === 'error') {
+    return 'Retry';
   }
 
   if (item.translatedText) {
