@@ -28,10 +28,6 @@ const getProviderLabel = (provider: TranslationProvider): string => {
     return 'DeepL';
   }
 
-  if (provider === 'openai') {
-    return 'OpenAI';
-  }
-
   return 'Mock';
 };
 

@@ -1,6 +1,6 @@
 import type { TranslationLanguage } from './cache';
 
-export type TranslationProvider = 'mock' | 'deepl' | 'openai';
+export type TranslationProvider = 'mock' | 'deepl';
 
 export interface TranslationProviderOption {
   readonly value: TranslationProvider;

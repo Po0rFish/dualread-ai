@@ -21,10 +21,5 @@ export const translationConfig: TranslationConfig = {
       label: 'DeepL',
       description: 'DeepL provider placeholder.',
     },
-    {
-      value: 'openai',
-      label: 'OpenAI',
-      description: 'OpenAI provider placeholder.',
-    },
   ],
 };

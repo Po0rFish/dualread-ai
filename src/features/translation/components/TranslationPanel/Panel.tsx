@@ -17,14 +17,8 @@ interface TranslationPanelProps {
   readonly selectedProvider: TranslationProvider;
   readonly providerOptions: TranslationProviderOption[];
   readonly onProviderChange: (provider: TranslationProvider) => void;
-  readonly onUpdateItem: (
-    itemId: string,
-    translatedText: string,
-  ) => Promise<void>;
-  readonly onMarkItemError: (
-    itemId: string,
-    errorMessage: string,
-  ) => void;
+  readonly onUpdateItem: (itemId: string, translatedText: string,) => Promise<void>;
+  readonly onMarkItemError: (itemId: string, errorMessage: string,) => void;
   readonly onRemoveItem: (itemId: string) => void;
   readonly onClearItems: () => void;
 }
@@ -39,10 +33,8 @@ export default function Panel({
   onRemoveItem,
   onClearItems,
 }: TranslationPanelProps) {
-  const [translatingItemIds, setTranslatingItemIds] = useState<
-    string[]
-  >([]);
-
+  const [translatingItemIds, setTranslatingItemIds] = useState<string[]>([]);
+  const [copiedItemId, setCopiedItemId] = useState<string | null>(null,);
   const {
     deeplApiKey,
     setDeepLApiKey,
@@ -53,8 +45,7 @@ export default function Panel({
   const hasActiveTranslation = translatingItemIds.length > 0;
   const isDeepLSelected = selectedProvider === 'deepl';
   const hasDeepLApiKey = deeplApiKey.trim().length > 0;
-  const isTranslationProviderReady =
-    !isDeepLSelected || hasDeepLApiKey;
+  const isTranslationProviderReady = !isDeepLSelected || hasDeepLApiKey;
 
   const isItemTranslating = (itemId: string): boolean => {
     return translatingItemIds.includes(itemId);
@@ -94,6 +85,33 @@ export default function Panel({
     }
 
     onClearItems();
+  };
+  const handleCopyTranslationClick = (item: TranslationItem): void => {
+    if (!item.translatedText) {
+      return;
+    }
+
+    const copyTranslation = async (): Promise<void> => {
+      try {
+        await navigator.clipboard.writeText(item.translatedText ?? '');
+
+        setCopiedItemId(item.id);
+
+        window.setTimeout(() => {
+          setCopiedItemId((currentCopiedItemId) => {
+            if (currentCopiedItemId !== item.id) {
+              return currentCopiedItemId;
+            }
+
+            return null;
+          });
+        }, 1200);
+      } catch {
+        setCopiedItemId(null);
+      }
+    };
+
+    void copyTranslation();
   };
 
   const handleTranslateClick = (item: TranslationItem): void => {
@@ -176,10 +194,10 @@ export default function Panel({
                 key={item.id}
                 item={item}
                 isTranslating={isItemTranslating(item.id)}
-                isTranslationProviderReady={
-                  isTranslationProviderReady
-                }
+                isTranslationProviderReady={isTranslationProviderReady}
+                isCopied={copiedItemId === item.id}
                 onTranslate={handleTranslateClick}
+                onCopyTranslation={handleCopyTranslationClick}
                 onRemove={onRemoveItem}
               />
             );

@@ -5,7 +5,9 @@ interface ItemProps {
   readonly item: TranslationItem;
   readonly isTranslating: boolean;
   readonly isTranslationProviderReady: boolean;
+  readonly isCopied: boolean;
   readonly onTranslate: (item: TranslationItem) => void;
+  readonly onCopyTranslation: (item: TranslationItem) => void;
   readonly onRemove: (itemId: string) => void;
 }
 
@@ -13,7 +15,9 @@ export default function Item({
   item,
   isTranslating,
   isTranslationProviderReady,
+  isCopied,
   onTranslate,
+  onCopyTranslation,
   onRemove,
 }: ItemProps) {
   const shouldShowTranslationError =
@@ -81,23 +85,38 @@ export default function Item({
         )}
       </div>
 
-      <button
-        type="button"
-        className="translation-panel__translate-button"
-        title={
-          isTranslationProviderReady
-            ? undefined
-            : 'Enter your DeepL API key to enable translation.'
-        }
-        onClick={() => {
-          onTranslate(item);
-        }}
-        disabled={isTranslating || !isTranslationProviderReady}
-      >
-        {isTranslationProviderReady
-          ? getTranslateButtonText(item, isTranslating)
-          : 'Enter API key'}
-      </button>
+      <div className="translation-panel__item-actions">
+        <button
+          type="button"
+          className="translation-panel__translate-button"
+          title={
+            isTranslationProviderReady
+              ? undefined
+              : 'Enter your DeepL API key to enable translation.'
+          }
+          onClick={() => {
+            onTranslate(item);
+          }}
+          disabled={isTranslating || !isTranslationProviderReady}
+        >
+          {isTranslationProviderReady
+            ? getTranslateButtonText(item, isTranslating)
+            : 'Enter API key'}
+        </button>
+
+        {item.translatedText && (
+          <button
+            type="button"
+            className="translation-panel__copy-button"
+            onClick={() => {
+              onCopyTranslation(item);
+            }}
+            disabled={isTranslating}
+          >
+            {isCopied ? 'Copied' : 'Copy'}
+          </button>
+        )}
+      </div>
     </article>
   );
 }

@@ -4,7 +4,6 @@ import type {
 } from '../types/service';
 import { deeplProvider } from './providers/deeplProvider';
 import { mockProvider } from './providers/mockProvider';
-import { openAiProvider } from './providers/openAiProvider';
 
 const createUnsupportedProviderError = (provider: never): Error => {
   return new Error(
@@ -30,10 +29,6 @@ export const translateText = async ({
 
   if (provider === 'deepl') {
     return deeplProvider.translate(params);
-  }
-
-  if (provider === 'openai') {
-    return openAiProvider.translate(params);
   }
 
   throw createUnsupportedProviderError(provider);
