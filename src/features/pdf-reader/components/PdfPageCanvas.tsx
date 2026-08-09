@@ -52,10 +52,6 @@ export default function PdfPageCanvas({
         }
 
         setClassifiedSegments([]);
-        setCanvasSize({
-          width: 0,
-          height: 0,
-        });
 
         const arrayBuffer = await file.arrayBuffer();
 
