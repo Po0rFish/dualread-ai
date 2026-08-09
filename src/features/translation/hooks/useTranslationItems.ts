@@ -54,16 +54,15 @@ export const useTranslationItems = ({
       });
 
       if (itemExists) {
-        return currentItems.map((currentItem) => {
-          if (currentItem.id === item.id) {
-            return item;
-          }
-
-          return currentItem;
-        });
+        return [
+          item,
+          ...currentItems.filter((currentItem) => {
+            return currentItem.id !== item.id;
+          }),
+        ];
       }
 
-      return [...currentItems, item];
+      return [item, ...currentItems];
     });
   }, []);
 
@@ -72,6 +71,15 @@ export const useTranslationItems = ({
       if (!segment) {
         return;
       }
+
+      const pendingItem = createTranslationItem({
+        segment,
+        cachedTranslation: null,
+        targetLanguage: TARGET_LANGUAGE,
+        provider,
+      });
+
+      addTranslationItem(pendingItem);
 
       const loadCachedTranslation = async (): Promise<void> => {
         const cachedTranslation =
@@ -89,14 +97,24 @@ export const useTranslationItems = ({
             ? cachedTranslation
             : null;
 
-        addTranslationItem(
-          createTranslationItem({
-            segment,
-            cachedTranslation: validCachedTranslation,
-            targetLanguage: TARGET_LANGUAGE,
-            provider,
-          }),
-        );
+        if (!validCachedTranslation) {
+          return;
+        }
+
+        const cachedItem = createTranslationItem({
+          segment,
+          cachedTranslation: validCachedTranslation,
+          targetLanguage: TARGET_LANGUAGE,
+          provider,
+        });
+
+        setTranslationItems((currentItems) => {
+          return currentItems.map((currentItem) => {
+            return currentItem.id === cachedItem.id
+              ? cachedItem
+              : currentItem;
+          });
+        });
       };
 
       void loadCachedTranslation();

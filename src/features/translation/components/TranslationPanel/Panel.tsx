@@ -1,15 +1,13 @@
 import { useState } from 'react';
 import { useTranslationCredentials } from '../../context/useCred';
-import { translateText } from '../../services/translationService';
+import { useTranslationPanelActions } from '../../hooks/useTranslationPanelActions';
 import type {
   TranslationProvider,
   TranslationProviderOption,
 } from '../../types/service';
 import type { TranslationItem } from '../../types/translation';
-import Cred from './Cred';
 import Item from './Item';
-import Provider from './Provider';
-import { getErrorMessage } from './helpers';
+import SettingsDialog from './SettingsDialog';
 import './Panel.scss';
 
 interface TranslationPanelProps {
@@ -33,8 +31,7 @@ export default function Panel({
   onRemoveItem,
   onClearItems,
 }: TranslationPanelProps) {
-  const [translatingItemIds, setTranslatingItemIds] = useState<string[]>([]);
-  const [copiedItemId, setCopiedItemId] = useState<string | null>(null,);
+  const [areSettingsOpen, setAreSettingsOpen] = useState(false);
   const {
     deeplApiKey,
     setDeepLApiKey,
@@ -42,32 +39,23 @@ export default function Panel({
     getApiKeyForProvider,
   } = useTranslationCredentials();
 
-  const hasActiveTranslation = translatingItemIds.length > 0;
   const isDeepLSelected = selectedProvider === 'deepl';
   const hasDeepLApiKey = deeplApiKey.trim().length > 0;
   const isTranslationProviderReady = !isDeepLSelected || hasDeepLApiKey;
-
-  const isItemTranslating = (itemId: string): boolean => {
-    return translatingItemIds.includes(itemId);
-  };
-
-  const startItemTranslation = (itemId: string): void => {
-    setTranslatingItemIds((currentItemIds) => {
-      if (currentItemIds.includes(itemId)) {
-        return currentItemIds;
-      }
-
-      return [...currentItemIds, itemId];
-    });
-  };
-
-  const finishItemTranslation = (itemId: string): void => {
-    setTranslatingItemIds((currentItemIds) => {
-      return currentItemIds.filter((currentItemId) => {
-        return currentItemId !== itemId;
-      });
-    });
-  };
+  const {
+    hasActiveTranslation,
+    copiedItemId,
+    copyErrorItemId,
+    isItemTranslating,
+    handleCopy,
+    handleTranslate,
+  } = useTranslationPanelActions({
+    selectedProvider,
+    isTranslationProviderReady,
+    getApiKeyForProvider,
+    onUpdateItem,
+    onMarkItemError,
+  });
 
   const handleProviderChange = (
     provider: TranslationProvider,
@@ -86,97 +74,56 @@ export default function Panel({
 
     onClearItems();
   };
-  const handleCopyTranslationClick = (item: TranslationItem): void => {
-    if (!item.translatedText) {
-      return;
-    }
-
-    const copyTranslation = async (): Promise<void> => {
-      try {
-        await navigator.clipboard.writeText(item.translatedText ?? '');
-
-        setCopiedItemId(item.id);
-
-        window.setTimeout(() => {
-          setCopiedItemId((currentCopiedItemId) => {
-            if (currentCopiedItemId !== item.id) {
-              return currentCopiedItemId;
-            }
-
-            return null;
-          });
-        }, 1200);
-      } catch {
-        setCopiedItemId(null);
-      }
-    };
-
-    void copyTranslation();
-  };
-
-  const handleTranslateClick = (item: TranslationItem): void => {
-    if (!isTranslationProviderReady || isItemTranslating(item.id)) {
-      return;
-    }
-
-    const translateItem = async (): Promise<void> => {
-      try {
-        startItemTranslation(item.id);
-
-        const translationResult = await translateText({
-          sourceText: item.sourceText,
-          targetLanguage: item.targetLanguage,
-          provider: selectedProvider,
-          apiKey: getApiKeyForProvider(selectedProvider),
-        });
-
-        await onUpdateItem(item.id, translationResult.translatedText);
-      } catch (error) {
-        onMarkItemError(item.id, getErrorMessage(error));
-      } finally {
-        finishItemTranslation(item.id);
-      }
-    };
-
-    void translateItem();
-  };
-
   return (
     <aside className="translation-panel">
       <header className="translation-panel__header">
         <h2 className="translation-panel__title">Translation</h2>
 
-        {items.length > 0 && (
+        <div className="translation-panel__header-actions">
           <button
             type="button"
-            className="translation-panel__clear-button"
-            title={
-              hasActiveTranslation
-                ? 'Wait until translation request finishes.'
-                : undefined
-            }
-            onClick={handleClearItemsClick}
-            disabled={hasActiveTranslation}
+            className="translation-panel__settings-button"
+            aria-expanded={areSettingsOpen}
+            aria-controls="translation-panel-settings"
+            aria-haspopup="dialog"
+            onClick={() => {
+              setAreSettingsOpen((currentValue) => !currentValue);
+            }}
           >
-            Clear
+            Settings
           </button>
-        )}
+
+          {items.length > 0 && (
+            <button
+              type="button"
+              className="translation-panel__clear-button"
+              title={
+                hasActiveTranslation
+                  ? 'Wait until translation request finishes.'
+                  : 'Clear this panel. Saved translations remain available.'
+              }
+              onClick={handleClearItemsClick}
+              disabled={hasActiveTranslation}
+            >
+              Clear panel
+            </button>
+          )}
+        </div>
       </header>
 
-      <Provider
-        selectedProvider={selectedProvider}
-        providerOptions={providerOptions}
-        isDisabled={hasActiveTranslation}
-        onProviderChange={handleProviderChange}
-      />
-
-      {isDeepLSelected && (
-        <Cred
+      {areSettingsOpen && (
+        <SettingsDialog
+          selectedProvider={selectedProvider}
+          providerOptions={providerOptions}
+          isDisabled={hasActiveTranslation}
           deeplApiKey={deeplApiKey}
           hasDeepLApiKey={hasDeepLApiKey}
-          isDisabled={hasActiveTranslation}
+          onProviderChange={handleProviderChange}
           setDeepLApiKey={setDeepLApiKey}
           clearDeepLApiKey={clearDeepLApiKey}
+          onClose={() => {
+            setAreSettingsOpen(false);
+          }}
         />
       )}
 
@@ -196,8 +143,9 @@ export default function Panel({
                 isTranslating={isItemTranslating(item.id)}
                 isTranslationProviderReady={isTranslationProviderReady}
                 isCopied={copiedItemId === item.id}
-                onTranslate={handleTranslateClick}
-                onCopyTranslation={handleCopyTranslationClick}
+                hasCopyError={copyErrorItemId === item.id}
+                onTranslate={handleTranslate}
+                onCopyTranslation={handleCopy}
                 onRemove={onRemoveItem}
               />
             );

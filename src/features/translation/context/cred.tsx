@@ -30,7 +30,7 @@ export const TranslationCredentialsProvider = ({
   const getApiKeyForProvider = useCallback(
     (provider: TranslationProvider): string | undefined => {
       if (provider === 'deepl') {
-        return deeplApiKey;
+        return deeplApiKey.trim();
       }
 
       return undefined;
