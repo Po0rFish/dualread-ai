@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import type { CSSProperties } from 'react';
 import type { ClassifiedPdfTextSegment } from '../../../shared/types/reader';
 import TranslationPanel from '../../translation/components/TranslationPanel';
 import { useTranslationItems } from '../../translation/hooks/useTranslationItems';
@@ -9,6 +10,7 @@ import ReaderNav from './ReaderNav';
 import TranslationActions from './TranslationActions';
 import { useTranslationProvider } from '../../translation/hooks/useTranslationProvider';
 import type { TranslationProvider } from '../../translation/types/service';
+import { useTranslationPanelResize } from '../../translation/hooks/useTranslationPanelResize';
 import './PdfDocumentReader.scss';
 
 interface PdfDocumentReaderProps {
@@ -22,6 +24,13 @@ export default function PdfDocumentReader({
 }: PdfDocumentReaderProps) {
   const [selectedSegment, setSelectedSegment] =
     useState<ClassifiedPdfTextSegment | null>(null);
+  const {
+    containerRef,
+    panelWidth,
+    startResize,
+    resetWidth,
+    handleResizeKeyDown,
+  } = useTranslationPanelResize();
 
   const handlePageChange = useCallback((): void => {
     setSelectedSegment(null);
@@ -102,7 +111,15 @@ export default function PdfDocumentReader({
         />
       </div>
 
-      <div className="pdf-document-reader__content">
+      <div
+        ref={containerRef}
+        className="pdf-document-reader__content"
+        style={
+          {
+            '--translation-panel-width': `${panelWidth}px`,
+          } as CSSProperties
+        }
+      >
         <div className="pdf-document-reader__pages">
           <PdfPageCanvas
             file={file}
@@ -111,6 +128,18 @@ export default function PdfDocumentReader({
             onSelectSegment={setSelectedSegment}
           />
         </div>
+        <button
+          type="button"
+          className="pdf-document-reader__resize-handle"
+          aria-label="Resize translation panel"
+          title="Drag to resize. Double-click to reset."
+          onPointerDown={(event) => {
+            event.currentTarget.setPointerCapture(event.pointerId);
+            startResize();
+          }}
+          onDoubleClick={resetWidth}
+          onKeyDown={handleResizeKeyDown}
+        />
         <TranslationPanel
           items={translationItems}
           selectedProvider={selectedProvider}
