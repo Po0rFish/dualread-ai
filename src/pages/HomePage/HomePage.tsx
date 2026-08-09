@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import PdfDocumentReader from '../../features/pdf-reader/components/PdfDocumentReader';
 import { getPdfPagesCount } from '../../features/pdf-reader/lib/getPdfPagesCount';
 import PdfUploader from '../../features/pdf-upload/components/PdfUploader';
 import { useLibraryDocuments } from '../../features/library/hooks/useLibraryDocuments';
+import AppHeader from '../../shared/components/AppHeader';
 import './HomePage.scss';
 
 interface SelectedDocumentFile {
@@ -56,29 +56,35 @@ export default function HomePage() {
 
   return (
     <main className="home-page">
-      <header className="home-page__header">
-        <h1 className="home-page__title">DualRead AI</h1>
+      <AppHeader context="PDF reader and translation workspace" />
 
-        <Link to="/library" className="home-page__library-link">
-          Library
-        </Link>
-      </header>
+      {!selectedDocumentFile && (
+        <div className="home-page__start">
+          <header className="home-page__intro">
+            <p className="home-page__eyebrow">Reading workspace</p>
+            <h1 className="home-page__title">Open a document</h1>
+            <p className="home-page__description">
+              Upload a PDF to read, select text, and translate without leaving the page.
+            </p>
+          </header>
 
-      <section className="home-page__upload">
-        <PdfUploader onFileSelect={handleFileSelect} />
+          <section className="home-page__upload">
+            <PdfUploader onFileSelect={handleFileSelect} />
 
-        {isLibraryLoading && (
-          <p className="home-page__message">Saving PDF...</p>
-        )}
+            {isLibraryLoading && (
+              <p className="home-page__message">Saving PDF...</p>
+            )}
 
-        {libraryMessage && (
-          <p className="home-page__message">{libraryMessage}</p>
-        )}
+            {libraryMessage && (
+              <p className="home-page__message">{libraryMessage}</p>
+            )}
 
-        {homePageMessage && (
-          <p className="home-page__message">{homePageMessage}</p>
-        )}
-      </section>
+            {homePageMessage && (
+              <p className="home-page__message">{homePageMessage}</p>
+            )}
+          </section>
+        </div>
+      )}
 
       {selectedDocumentFile && (
         <section className="home-page__reader">

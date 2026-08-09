@@ -9,4 +9,10 @@ body {
     BlinkMacSystemFont,
     'Segoe UI',
     sans-serif;
+  color: var(--color-text);
+  background: var(--color-bg);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }

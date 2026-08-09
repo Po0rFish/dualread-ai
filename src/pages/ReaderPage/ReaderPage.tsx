@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { documentsRepository } from '../../features/library/repositories/documentRepository';
 import type { LibraryDocument } from '../../features/library/types/library';
 import PdfDocumentReader from '../../features/pdf-reader/components/PdfDocumentReader';
+import AppHeader from '../../shared/components/AppHeader';
 import './ReaderPage.scss';
 
 const createFileFromLibraryDocument = (
@@ -79,9 +80,10 @@ export default function ReaderPage() {
 
   return (
     <main className="reader-page">
+      <AppHeader context={readerFile?.name ?? 'Document reader'} />
       <header className="reader-page__header">
         <div className="reader-page__header-content">
-          <p className="reader-page__eyebrow">DualRead AI</p>
+          <p className="reader-page__eyebrow">Workspace</p>
           <h1 className="reader-page__title">Reader</h1>
         </div>
 

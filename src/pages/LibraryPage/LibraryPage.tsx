@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useLibraryDocuments } from '../../features/library/hooks/useLibraryDocuments';
 import { getReadingProgress } from '../../shared/storage/readingProgressStorage';
+import AppHeader from '../../shared/components/AppHeader';
 import './LibraryPage.scss';
 
 const formatFileSize = (fileSize: number): string => {
@@ -49,9 +50,10 @@ export default function LibraryPage() {
 
   return (
     <main className="library-page">
+      <AppHeader context="Your local document collection" />
       <header className="library-page__header">
         <div className="library-page__header-content">
-          <p className="library-page__eyebrow">DualRead AI</p>
+          <p className="library-page__eyebrow">Workspace</p>
           <h1 className="library-page__title">Library</h1>
         </div>
 

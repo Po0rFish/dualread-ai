@@ -1,94 +1,59 @@
-.library-page {
-  min-height: 100vh;
-  padding: 32px;
-  background: #f4efe6;
-  color: #241c15;
-}
+.library-page { min-height: 100vh; background: var(--color-bg); color: var(--color-text); }
 
 .library-page__header {
-  max-width: 860px;
-  margin: 0 auto 24px;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 56px 24px 24px;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: 24px;
 }
 
-.library-page__header-content {
-  min-width: 0;
-}
-
-.library-page__eyebrow {
-  margin: 0 0 6px;
-  color: #8b6f47;
-  font-size: 13px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.library-page__title {
-  margin: 0;
-  font-size: 42px;
-  line-height: 1.1;
-}
+.library-page__eyebrow { margin: 0 0 8px; color: var(--color-accent-light); font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.library-page__title { margin: 0; color: var(--color-text-strong); font-size: 42px; line-height: 1.1; letter-spacing: -.035em; }
 
 .library-page__upload-link,
-.library-page__empty-link {
+.library-page__empty-link,
+.library-page__document-open-link {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-height: 40px;
-  border-radius: 10px;
-  padding: 10px 16px;
-  background: #241c15;
-  color: #fffaf2;
+  padding: 9px 15px;
+  border-radius: var(--radius-sm);
+  background: var(--color-accent);
+  color: #fff;
+  font-weight: 650;
   text-decoration: none;
-  font-weight: 600;
 }
 
-.library-page__empty {
-  max-width: 860px;
-  margin: 0 auto;
-  padding: 32px;
-  background: #fffaf2;
-  border: 1px solid #e6d8c7;
-  border-radius: 18px;
-  box-shadow: 0 12px 32px rgba(40, 30, 20, 0.08);
+.library-page__content { max-width: 1080px; margin: 0 auto; padding: 0 24px 64px; }
+.library-page__message { color: var(--color-text-muted); }
+
+.library-page__empty,
+.library-page__document-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
 }
 
-.library-page__empty-title {
-  margin: 0;
-  font-size: 28px;
-  line-height: 1.2;
-}
+.library-page__empty { padding: 32px; box-shadow: var(--shadow-panel); }
+.library-page__empty-title { margin: 0; color: var(--color-text-strong); font-size: 24px; }
+.library-page__empty-description { max-width: 560px; margin: 12px 0 0; color: var(--color-text-muted); }
+.library-page__empty-link { margin-top: 24px; }
+.library-page__documents { display: grid; gap: 10px; }
 
-.library-page__empty-description {
-  max-width: 560px;
-  margin: 16px 0 0;
-  color: #6b5a4a;
-  font-size: 16px;
-  line-height: 1.6;
-}
-
-.library-page__empty-link {
-  margin-top: 24px;
-}
+.library-page__document-card { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 18px 20px; transition: border-color 160ms ease, background-color 160ms ease; }
+.library-page__document-card:hover { border-color: var(--color-border-strong); background: var(--color-surface-raised); }
+.library-page__document-title { margin: 0 0 7px; color: var(--color-text-strong); font-size: 16px; font-weight: 650; }
+.library-page__document-meta { display: inline; margin: 0 12px 0 0; color: var(--color-text-muted); font-size: 12px; }
+.library-page__document-actions { display: flex; gap: 8px; }
+.library-page__document-delete-button { min-height: 40px; padding: 8px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: transparent; color: var(--color-text-muted); cursor: pointer; }
+.library-page__document-delete-button:hover { border-color: var(--color-danger); background: var(--color-danger-soft); color: var(--color-danger); }
 
 @media (max-width: 720px) {
-  .library-page {
-    padding: 20px;
-  }
-
-  .library-page__header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .library-page__title {
-    font-size: 36px;
-  }
-
-  .library-page__empty {
-    padding: 24px;
-  }
+  .library-page__header { padding-top: 40px; align-items: flex-start; }
+  .library-page__title { font-size: 36px; }
+  .library-page__document-card { align-items: flex-start; flex-direction: column; }
 }

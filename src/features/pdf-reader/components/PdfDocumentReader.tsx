@@ -6,8 +6,6 @@ import { usePdfNav } from '../hooks/usePdfNav';
 import { useTextSelection } from '../hooks/useTextSelection';
 import PdfPageCanvas from './PdfPageCanvas';
 import ReaderNav from './ReaderNav';
-import SelectedSegment from './SelectedSegment';
-import SelectedSentence from './SelectedSentence';
 import TranslationActions from './TranslationActions';
 import { useTranslationProvider } from '../../translation/hooks/useTranslationProvider';
 import type { TranslationProvider } from '../../translation/types/service';
@@ -58,7 +56,6 @@ export default function PdfDocumentReader({
     translationSegment,
     textModelStatus,
     sentencesCount,
-    isTextModelLoading,
   } = useTextSelection({
     documentId,
     file,
@@ -86,10 +83,6 @@ export default function PdfDocumentReader({
         selectedSentence?.parts.length ?? 0
       }
     >
-      <header className="pdf-document-reader__header">
-        <h1 className="pdf-document-reader__title">PDF Reader</h1>
-      </header>
-
       <ReaderNav
         currentPageNumber={currentPageNumber}
         pagesCount={pagesCount}
@@ -103,16 +96,6 @@ export default function PdfDocumentReader({
       <TranslationActions
         translationSegment={translationSegment}
         onAddToTranslation={addSegmentToTranslation}
-      />
-
-      <SelectedSegment selectedSegment={selectedSegment} />
-
-      <SelectedSentence
-        selectedSegment={selectedSegment}
-        selectedSentence={selectedSentence}
-        textModelStatus={textModelStatus}
-        sentencesCount={sentencesCount}
-        isTextModelLoading={isTextModelLoading}
       />
 
       <div className="pdf-document-reader__content">

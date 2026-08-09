@@ -1,67 +1,73 @@
 .home-page {
   min-height: 100vh;
-  padding: 32px;
-  background: #f4efe6;
+  background: var(--color-bg);
+  color: var(--color-text);
 }
 
-.home-page__header {
-  margin-bottom: 24px;
-  text-align: center;
+.home-page__intro {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 72px 24px 28px;
+}
+
+.home-page__eyebrow {
+  margin: 0 0 10px;
+  color: var(--color-accent-light);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .home-page__title {
   margin: 0;
-  font-size: 48px;
-  line-height: 1;
-  color: #241c15;
+  color: var(--color-text-strong);
+  font-size: clamp(36px, 5vw, 56px);
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+}
+
+.home-page__description {
+  max-width: 600px;
+  margin: 18px 0 0;
+  color: var(--color-text-muted);
+  font-size: 16px;
 }
 
 .home-page__upload {
   max-width: 720px;
   margin: 0 auto 32px;
   padding: 24px;
-  text-align: center;
-  background: #fffaf2;
-  border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(40, 30, 20, 0.12);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-panel);
 }
 
 .home-page__reader {
-  max-width: 1200px;
-  margin: 0 auto;
+  margin: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-elevated);
+  overflow: hidden;
 }
 
-.pdf-uploader__label {
-  display: inline-block;
-  cursor: pointer;
-}
+.pdf-uploader__label { display: inline-block; cursor: pointer; }
 
 .pdf-uploader__label-text {
   display: inline-block;
-  padding: 12px 18px;
-  border-radius: 10px;
-  background: #241c15;
-  color: #fffaf2;
-  font-weight: 700;
+  padding: 11px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+  background: var(--color-accent);
+  color: #fff;
+  font-weight: 650;
 }
 
-.pdf-uploader__input {
-  display: none;
-}
+.pdf-uploader__input { display: none; }
+.home-page__message { margin: 16px 0 0; color: var(--color-text-muted); font-size: 13px; }
 
-.home-page__library-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  min-height: 40px;
-  margin-top: 16px;
-  padding: 10px 16px;
-
-  border-radius: 10px;
-  background: #241c15;
-  color: #fffaf2;
-
-  font-weight: 700;
-  text-decoration: none;
+@media (max-width: 760px) {
+  .home-page__intro { padding-top: 48px; }
+  .home-page__upload { margin-inline: 16px; }
 }
