@@ -9,6 +9,8 @@ import ReaderNav from './ReaderNav';
 import TranslationActions from './TranslationActions';
 import { useTranslationProvider } from '../../translation/hooks/useTranslationProvider';
 import type { TranslationProvider } from '../../translation/types/service';
+import './PdfDocumentReader.scss';
+
 interface PdfDocumentReaderProps {
   readonly file: File;
   readonly documentId?: string;
@@ -83,20 +85,22 @@ export default function PdfDocumentReader({
         selectedSentence?.parts.length ?? 0
       }
     >
-      <ReaderNav
-        currentPageNumber={currentPageNumber}
-        pagesCount={pagesCount}
-        pageInputValue={pageInputValue}
-        onPreviousPage={goToPreviousPage}
-        onNextPage={goToNextPage}
-        onPageInputChange={setPageInputValue}
-        onGoToPage={goToPage}
-      />
+      <div className="pdf-document-reader__controls">
+        <ReaderNav
+          currentPageNumber={currentPageNumber}
+          pagesCount={pagesCount}
+          pageInputValue={pageInputValue}
+          onPreviousPage={goToPreviousPage}
+          onNextPage={goToNextPage}
+          onPageInputChange={setPageInputValue}
+          onGoToPage={goToPage}
+        />
 
-      <TranslationActions
-        translationSegment={translationSegment}
-        onAddToTranslation={addSegmentToTranslation}
-      />
+        <TranslationActions
+          translationSegment={translationSegment}
+          onAddToTranslation={addSegmentToTranslation}
+        />
+      </div>
 
       <div className="pdf-document-reader__content">
         <div className="pdf-document-reader__pages">

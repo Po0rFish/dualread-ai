@@ -19,7 +19,7 @@ export const translationConfig: TranslationConfig = {
     {
       value: 'deepl',
       label: 'DeepL',
-      description: 'DeepL provider placeholder.',
+      description: 'Translate with your DeepL API account.',
     },
   ],
 };

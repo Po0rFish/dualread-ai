@@ -56,7 +56,12 @@ export default function HomePage() {
 
   return (
     <main className="home-page">
-      <AppHeader context="PDF reader and translation workspace" />
+      <AppHeader
+        context={
+          selectedDocumentFile?.file.name ??
+          'PDF reader and translation workspace'
+        }
+      />
 
       {!selectedDocumentFile && (
         <div className="home-page__start">

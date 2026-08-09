@@ -21,7 +21,7 @@ export default function TranslationActions({
         }}
         disabled={!translationSegment}
       >
-        Add selected sentence to translation
+        Add to translation
       </button>
     </div>
   );

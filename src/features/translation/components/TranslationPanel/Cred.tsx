@@ -74,11 +74,6 @@ export default function Cred({
           Key is kept only in memory and disappears after page reload.
         </p>
 
-        <p className="translation-panel__credentials-hint">
-          To find your key: open your DeepL account and go to API Keys
-          or API Keys & Limits.
-        </p>
-
         <a
           className="translation-panel__credentials-link"
           href={DEEPL_API_KEY_HELP_URL}

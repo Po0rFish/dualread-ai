@@ -37,19 +37,23 @@ export default function ReaderNav({
         <button
           type="button"
           className="pdf-document-reader__page-button"
+          aria-label="Previous page"
+          title="Previous page"
           onClick={onPreviousPage}
           disabled={currentPageNumber <= 1}
         >
-          Previous page
+          ‹
         </button>
 
         <button
           type="button"
           className="pdf-document-reader__page-button"
+          aria-label="Next page"
+          title="Next page"
           onClick={onNextPage}
           disabled={pagesCount === 0 || currentPageNumber >= pagesCount}
         >
-          Next page
+          ›
         </button>
 
         <form
@@ -57,9 +61,7 @@ export default function ReaderNav({
           onSubmit={handleGoToPageSubmit}
         >
           <label className="pdf-document-reader__go-to-page-label">
-            <span className="pdf-document-reader__go-to-page-text">
-              Go to page
-            </span>
+            <span className="pdf-document-reader__go-to-page-text">Page</span>
 
             <input
               type="number"
