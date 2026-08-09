@@ -46,6 +46,9 @@ export default function Panel({
     hasActiveTranslation,
     copiedItemId,
     copyErrorItemId,
+    deeplUsage,
+    deeplUsageError,
+    clearDeepLUsage,
     isItemTranslating,
     handleCopy,
     handleTranslate,
@@ -64,6 +67,7 @@ export default function Panel({
       return;
     }
 
+    clearDeepLUsage();
     onProviderChange(provider);
   };
 
@@ -118,9 +122,17 @@ export default function Panel({
           isDisabled={hasActiveTranslation}
           deeplApiKey={deeplApiKey}
           hasDeepLApiKey={hasDeepLApiKey}
+          deeplUsage={deeplUsage}
+          deeplUsageError={deeplUsageError}
           onProviderChange={handleProviderChange}
-          setDeepLApiKey={setDeepLApiKey}
-          clearDeepLApiKey={clearDeepLApiKey}
+          setDeepLApiKey={(apiKey) => {
+            clearDeepLUsage();
+            setDeepLApiKey(apiKey);
+          }}
+          clearDeepLApiKey={() => {
+            clearDeepLUsage();
+            clearDeepLApiKey();
+          }}
           onClose={() => {
             setAreSettingsOpen(false);
           }}

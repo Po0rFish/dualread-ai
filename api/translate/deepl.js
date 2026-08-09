@@ -4,6 +4,8 @@ const DEEPL_FREE_TRANSLATE_URL =
   'https://api-free.deepl.com/v2/translate';
 const DEEPL_PRO_TRANSLATE_URL =
   'https://api.deepl.com/v2/translate';
+const DEEPL_FREE_USAGE_URL = 'https://api-free.deepl.com/v2/usage';
+const DEEPL_PRO_USAGE_URL = 'https://api.deepl.com/v2/usage';
 
 const isRecord = (value) => {
   return typeof value === 'object' && value !== null;
@@ -46,6 +48,14 @@ const getDeepLTranslateUrl = (apiKey) => {
   return DEEPL_PRO_TRANSLATE_URL;
 };
 
+const getDeepLUsageUrl = (apiKey) => {
+  if (apiKey.endsWith(':fx')) {
+    return DEEPL_FREE_USAGE_URL;
+  }
+
+  return DEEPL_PRO_USAGE_URL;
+};
+
 const parseRequestBody = (body) => {
   if (typeof body !== 'string') {
     return body;
@@ -86,10 +96,17 @@ const isDeepLProxyTranslateRequestBody = (value) => {
   return true;
 };
 
+const isDeepLProxyUsageRequestBody = (value) => {
+  return isRecord(value) && value.operation === 'usage';
+};
+
 const getDeepLProxyRequestBody = (request) => {
   const requestBody = parseRequestBody(request.body);
 
-  if (!isDeepLProxyTranslateRequestBody(requestBody)) {
+  if (
+    !isDeepLProxyTranslateRequestBody(requestBody) &&
+    !isDeepLProxyUsageRequestBody(requestBody)
+  ) {
     return null;
   }
 
@@ -149,15 +166,21 @@ export default async function handler(request, response) {
     const apiKey = getDeepLApiKeyFromAuthorizationHeader(
       authorizationHeader,
     );
+    const isUsageRequest = isDeepLProxyUsageRequestBody(requestBody);
 
-    const deeplResponse = await fetch(getDeepLTranslateUrl(apiKey), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: authorizationHeader,
+    const deeplResponse = await fetch(
+      isUsageRequest
+        ? getDeepLUsageUrl(apiKey)
+        : getDeepLTranslateUrl(apiKey),
+      {
+        method: isUsageRequest ? 'GET' : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: authorizationHeader,
+        },
+        body: isUsageRequest ? undefined : JSON.stringify(requestBody),
       },
-      body: JSON.stringify(requestBody),
-    });
+    );
 
     const responseBody = await deeplResponse.text();
 

@@ -6,6 +6,8 @@ import type {
   DeepLTranslateRequestBody,
   DeepLTranslateResponse,
   DeepLTranslationResponseItem,
+  DeepLUsageRequestBody,
+  DeepLUsageResponse,
 } from '../../types/deepl';
 
 interface CreateDeepLRequestBodyParams {
@@ -83,6 +85,23 @@ export const createDeepLProxyRequestInit = ({
   };
 };
 
+export const createDeepLUsageProxyRequestInit = (
+  apiKey: string,
+): RequestInit => {
+  const body: DeepLUsageRequestBody = {
+    operation: 'usage',
+  };
+
+  return {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `${DEEPL_AUTH_HEADER_PREFIX} ${apiKey}`,
+    },
+    body: JSON.stringify(body),
+  };
+};
+
 export const isDeepLTranslateResponse = (
   value: unknown,
 ): value is DeepLTranslateResponse => {
@@ -99,6 +118,23 @@ export const isDeepLTranslateResponse = (
   }
 
   return value.translations.every(isDeepLTranslationResponseItem);
+};
+
+export const isDeepLUsageResponse = (
+  value: unknown,
+): value is DeepLUsageResponse => {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  return (
+    typeof value.character_count === 'number' &&
+    typeof value.character_limit === 'number' &&
+    (value.api_key_character_count === undefined ||
+      typeof value.api_key_character_count === 'number') &&
+    (value.api_key_character_limit === undefined ||
+      typeof value.api_key_character_limit === 'number')
+  );
 };
 
 export const isDeepLProxyErrorResponse = (

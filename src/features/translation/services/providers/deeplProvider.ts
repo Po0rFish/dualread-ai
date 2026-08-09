@@ -1,9 +1,11 @@
 import { DEEPL_TRANSLATE_PROXY_URL } from '../../config/deeplConfig';
 import {
   createDeepLProxyRequestInit,
+  createDeepLUsageProxyRequestInit,
   getDeepLTranslatedText,
   isDeepLProxyErrorResponse,
   isDeepLTranslateResponse,
+  isDeepLUsageResponse,
 } from '../../lib/deepl/api';
 import {
   createMissingApiKeyError,
@@ -15,10 +17,11 @@ import type {
   TranslateTextResult,
   TranslationProviderTranslateParams,
 } from '../../types/service';
+import type { DeepLUsageResponse } from '../../types/deepl';
 
 const DEEPL_PROVIDER = 'deepl';
 
-const requestDeepLTranslation = async (
+const requestDeepLProxy = async (
   requestInit: RequestInit,
 ): Promise<Response> => {
   try {
@@ -85,7 +88,7 @@ export const deeplProvider = {
       });
     }
 
-    const response = await requestDeepLTranslation(
+    const response = await requestDeepLProxy(
       createDeepLProxyRequestInit({
         sourceText,
         targetLanguage,
@@ -115,5 +118,37 @@ export const deeplProvider = {
       targetLanguage,
       provider: DEEPL_PROVIDER,
     };
+  },
+
+  async getUsage(apiKey: string): Promise<DeepLUsageResponse> {
+    const trimmedApiKey = apiKey.trim();
+
+    if (!trimmedApiKey) {
+      throw createMissingApiKeyError({
+        provider: DEEPL_PROVIDER,
+      });
+    }
+
+    const response = await requestDeepLProxy(
+      createDeepLUsageProxyRequestInit(trimmedApiKey),
+    );
+
+    if (!response.ok) {
+      throw createTranslationRequestError({
+        provider: DEEPL_PROVIDER,
+        status: response.status,
+        details: await getRequestErrorDetails(response),
+      });
+    }
+
+    const responseData = await readResponseData(response);
+
+    if (!isDeepLUsageResponse(responseData)) {
+      throw createUnexpectedResponseError({
+        provider: DEEPL_PROVIDER,
+      });
+    }
+
+    return responseData;
   },
 };

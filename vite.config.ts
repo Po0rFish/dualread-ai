@@ -9,6 +9,12 @@ const DEEPL_FREE_TRANSLATE_URL =
   'https://api-free.deepl.com/v2/translate';
 const DEEPL_PRO_TRANSLATE_URL =
   'https://api.deepl.com/v2/translate';
+const DEEPL_FREE_USAGE_URL = 'https://api-free.deepl.com/v2/usage';
+const DEEPL_PRO_USAGE_URL = 'https://api.deepl.com/v2/usage';
+
+const isRecord = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === 'object' && value !== null;
+};
 
 const getRequestPath = (request: IncomingMessage): string => {
   return request.url?.split('?')[0] ?? '';
@@ -59,6 +65,45 @@ const getDeepLTranslateUrl = (apiKey: string): string => {
   }
 
   return DEEPL_PRO_TRANSLATE_URL;
+};
+
+const getDeepLUsageUrl = (apiKey: string): string => {
+  if (apiKey.endsWith(':fx')) {
+    return DEEPL_FREE_USAGE_URL;
+  }
+
+  return DEEPL_PRO_USAGE_URL;
+};
+
+type DeepLProxyOperation = 'translate' | 'usage' | 'invalid';
+
+const getRequestOperation = (
+  requestBody: string,
+): DeepLProxyOperation => {
+  try {
+    const parsedBody: unknown = JSON.parse(requestBody);
+
+    if (!isRecord(parsedBody)) {
+      return 'invalid';
+    }
+
+    if (parsedBody.operation === 'usage') {
+      return 'usage';
+    }
+
+    if (
+      Array.isArray(parsedBody.text) &&
+      parsedBody.text.every((item) => typeof item === 'string') &&
+      typeof parsedBody.target_lang === 'string' &&
+      typeof parsedBody.show_billed_characters === 'boolean'
+    ) {
+      return 'translate';
+    }
+
+    return 'invalid';
+  } catch {
+    return 'invalid';
+  }
 };
 
 const readRequestBody = async (
@@ -122,15 +167,31 @@ const createDeepLDevProxyPlugin = (): Plugin => {
           const apiKey = getDeepLApiKeyFromAuthorizationHeader(
             authorizationHeader,
           );
+          const requestOperation = getRequestOperation(requestBody);
 
-          const deeplResponse = await fetch(getDeepLTranslateUrl(apiKey), {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: authorizationHeader,
+          if (requestOperation === 'invalid') {
+            sendJson(response, 400, {
+              error: 'DeepL request body is invalid.',
+              status: 400,
+            });
+            return;
+          }
+
+          const isUsageRequest = requestOperation === 'usage';
+
+          const deeplResponse = await fetch(
+            isUsageRequest
+              ? getDeepLUsageUrl(apiKey)
+              : getDeepLTranslateUrl(apiKey),
+            {
+              method: isUsageRequest ? 'GET' : 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: authorizationHeader,
+              },
+              body: isUsageRequest ? undefined : requestBody,
             },
-            body: requestBody,
-          });
+          );
 
           const responseBody = await deeplResponse.text();
 

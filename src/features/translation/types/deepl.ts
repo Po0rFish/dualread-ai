@@ -14,6 +14,17 @@ export interface DeepLTranslateResponse {
   readonly translations: DeepLTranslationResponseItem[];
 }
 
+export interface DeepLUsageRequestBody {
+  readonly operation: 'usage';
+}
+
+export interface DeepLUsageResponse {
+  readonly character_count: number;
+  readonly character_limit: number;
+  readonly api_key_character_count?: number;
+  readonly api_key_character_limit?: number;
+}
+
 export type DeepLProxyTranslateRequestBody =
   DeepLTranslateRequestBody;
 

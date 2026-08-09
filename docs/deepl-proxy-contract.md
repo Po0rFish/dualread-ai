@@ -17,7 +17,7 @@ api/translate/deepl.js  Vercel production proxy
 
 Both implementations must follow the same request and response contract.
 
-## Request
+## Translation request
 
 ```txt
 POST /api/translate/deepl
@@ -35,7 +35,34 @@ Authorization: DeepL-Auth-Key <api-key>
 
 The API key is entered by the user in the app UI and is kept only in React memory state.
 
-## Success response
+## Usage request
+
+After a successful DeepL translation, the frontend uses the same proxy
+route and method:
+
+```txt
+POST /api/translate/deepl
+Content-Type: application/json
+Authorization: DeepL-Auth-Key <api-key>
+```
+
+```json
+{
+  "operation": "usage"
+}
+```
+
+The proxy converts this request to `GET /v2/usage` on the matching
+DeepL Free or Pro host. It returns the DeepL usage response unchanged:
+
+```json
+{
+  "character_count": 147,
+  "character_limit": 1000000
+}
+```
+
+## Translation success response
 
 The proxy returns the DeepL response without changing its structure:
 
@@ -68,6 +95,9 @@ The `details` field is optional.
 Free key ending with :fx → https://api-free.deepl.com/v2/translate
 Other key               → https://api.deepl.com/v2/translate
 ```
+
+Usage requests select the same Free or Pro host with the `/v2/usage`
+path.
 
 ## Rule
 

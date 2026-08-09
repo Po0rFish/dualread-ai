@@ -4,6 +4,7 @@ import type {
 } from '../types/service';
 import { deeplProvider } from './providers/deeplProvider';
 import { mockProvider } from './providers/mockProvider';
+import type { DeepLUsageResponse } from '../types/deepl';
 
 const createUnsupportedProviderError = (provider: never): Error => {
   return new Error(
@@ -32,4 +33,10 @@ export const translateText = async ({
   }
 
   throw createUnsupportedProviderError(provider);
+};
+
+export const getDeepLUsage = async (
+  apiKey: string,
+): Promise<DeepLUsageResponse> => {
+  return deeplProvider.getUsage(apiKey);
 };

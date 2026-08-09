@@ -101,6 +101,20 @@
 .translation-settings .translation-panel__credentials-link { display: inline-block; margin-top: 7px; color: var(--color-accent-light); font-size: 11px; }
 .translation-settings .translation-panel__credentials-warning { margin: 10px 0 0; color: var(--color-danger); font-size: 11px; }
 
+.translation-settings__usage {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-border);
+}
+
+.translation-settings__usage-label { margin: 0; color: var(--color-text-muted); font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.translation-settings__usage-value { margin: 8px 0 0; color: var(--color-text); font-size: 12px; }
+.translation-settings__usage-value strong { color: var(--color-text-strong); }
+.translation-settings__usage-track { height: 4px; margin-top: 10px; border-radius: 4px; background: var(--color-surface-hover); overflow: hidden; }
+.translation-settings__usage-track span { display: block; height: 100%; border-radius: inherit; background: var(--color-accent); }
+.translation-settings__usage-remaining { margin: 7px 0 0; color: var(--color-text-muted); font-size: 10px; }
+.translation-settings__usage-error { margin: 8px 0 0; color: var(--color-danger); font-size: 11px; }
+
 @media (max-width: 620px) {
   .translation-settings {
     width: calc(100% - 20px);

@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { getErrorMessage } from '../components/TranslationPanel/helpers';
-import { translateText } from '../services/translationService';
+import {
+  getDeepLUsage,
+  translateText,
+} from '../services/translationService';
+import type { DeepLUsageResponse } from '../types/deepl';
 import type { TranslationProvider } from '../types/service';
 import type { TranslationItem } from '../types/translation';
 
@@ -34,6 +38,8 @@ export const useTranslationPanelActions = ({
   );
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
   const [copyErrorItemId, setCopyErrorItemId] = useState<string | null>(null);
+  const [deeplUsage, setDeepLUsage] = useState<DeepLUsageResponse | null>(null);
+  const [deeplUsageError, setDeepLUsageError] = useState<string | null>(null);
 
   useEffect(() => {
     return () => {
@@ -45,6 +51,11 @@ export const useTranslationPanelActions = ({
 
   const isItemTranslating = (itemId: string): boolean => {
     return translatingItemIds.has(itemId);
+  };
+
+  const clearDeepLUsage = (): void => {
+    setDeepLUsage(null);
+    setDeepLUsageError(null);
   };
 
   const handleCopy = (item: TranslationItem): void => {
@@ -102,6 +113,20 @@ export const useTranslationPanelActions = ({
         });
 
         await onUpdateItem(item.id, translationResult.translatedText);
+
+        if (selectedProvider === 'deepl') {
+          const apiKey = getApiKeyForProvider(selectedProvider);
+
+          if (apiKey) {
+            try {
+              setDeepLUsage(await getDeepLUsage(apiKey));
+              setDeepLUsageError(null);
+            } catch {
+              setDeepLUsage(null);
+              setDeepLUsageError('Usage could not be refreshed.');
+            }
+          }
+        }
       } catch (error) {
         onMarkItemError(item.id, getErrorMessage(error));
       } finally {
@@ -121,6 +146,9 @@ export const useTranslationPanelActions = ({
     hasActiveTranslation: translatingItemIds.size > 0,
     copiedItemId,
     copyErrorItemId,
+    deeplUsage,
+    deeplUsageError,
+    clearDeepLUsage,
     isItemTranslating,
     handleCopy,
     handleTranslate,
