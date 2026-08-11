@@ -18,6 +18,9 @@
 - Review the large production bundle warning and decide whether PDF-related code should be loaded dynamically.
 - Run local and Vercel production smoke tests.
 - Update the README with project setup, architecture, local-data behavior, DeepL proxy usage, and privacy notes.
+- Before the first product release, decide whether to reset `TEXT_MODEL_VERSION` to `1`.
+  - Reset it only together with a new text-model database namespace or an explicit cache migration/clear, so old version `1` records cannot be treated as current.
+  - Otherwise keep the version monotonic and document the existing model-version history.
 - Release version `0.20.0`.
 
 ## Translation follow-ups

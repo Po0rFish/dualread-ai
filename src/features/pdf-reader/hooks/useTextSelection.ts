@@ -36,6 +36,7 @@ export const useTextSelection = ({
   const selectedSentence = findSentence({
     textModel,
     segmentId: selectedSegment?.id ?? null,
+    segmentText: selectedSegment?.text,
     pageNumber: selectedSegment?.pageNumber,
   });
 

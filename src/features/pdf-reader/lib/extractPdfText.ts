@@ -6,12 +6,20 @@ interface PdfJsTextItem {
   readonly width: number;
   readonly height: number;
   readonly hasEOL: boolean;
+  readonly fontName: string;
+}
+
+interface PdfJsTextStyle {
+  readonly fontFamily?: string;
+  readonly ascent?: number;
+  readonly descent?: number;
 }
 
 interface ExtractPdfTextParams {
   readonly page: {
     getTextContent: () => Promise<{
       items: unknown[];
+      styles?: Record<string, PdfJsTextStyle>;
     }>;
   };
   readonly pageNumber: number;
@@ -36,15 +44,24 @@ const isPdfJsTextItem = (item: unknown): item is PdfJsTextItem => {
     }) &&
     typeof item.width === 'number' &&
     typeof item.height === 'number' &&
-    typeof item.hasEOL === 'boolean'
+    typeof item.hasEOL === 'boolean' &&
+    typeof item.fontName === 'string'
   );
 };
 
 const getTokenLineY = (
   item: PdfJsTextItem,
   pageHeight: number,
+  style: PdfJsTextStyle | undefined,
 ): number => {
-  return pageHeight - item.transform[5];
+  const fontHeight = getFontSize(item);
+  const fontAscent = style?.ascent
+    ? style.ascent * fontHeight
+    : style?.descent
+      ? (1 + style.descent) * fontHeight
+      : fontHeight;
+
+  return pageHeight - item.transform[5] - fontAscent;
 };
 
 const getFontSize = (item: PdfJsTextItem): number => {
@@ -62,6 +79,7 @@ const createTextToken = (
   pageNumber: number,
   pageHeight: number,
   orderIndex: number,
+  style: PdfJsTextStyle | undefined,
 ): PdfTextToken | null => {
   const text = item.str.trim();
 
@@ -75,11 +93,12 @@ const createTextToken = (
     orderIndex,
 
     x: item.transform[4],
-    lineY: getTokenLineY(item, pageHeight),
+    lineY: getTokenLineY(item, pageHeight, style),
     width: item.width,
     height: item.height,
 
     fontSize: getFontSize(item),
+    fontFamily: style?.fontFamily,
     hasEOL: item.hasEOL,
   };
 };
@@ -99,6 +118,7 @@ export const extractPdfText = async ({
         pageNumber,
         pageHeight,
         orderIndex,
+        textContent.styles?.[item.fontName],
       );
     })
     .filter((token): token is PdfTextToken => {

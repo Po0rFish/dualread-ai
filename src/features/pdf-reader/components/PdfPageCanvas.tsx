@@ -13,6 +13,7 @@ interface PdfPageCanvasProps {
   readonly file: File;
   readonly pageNumber: number;
   readonly selectedSegmentId: string | null;
+  readonly selectedText: string | null;
   readonly onSelectSegment: (segment: ClassifiedPdfTextSegment) => void;
   readonly translationPopover?: ReactNode;
 }
@@ -51,6 +52,7 @@ export default function PdfPageCanvas({
   file,
   pageNumber,
   selectedSegmentId,
+  selectedText,
   onSelectSegment,
   translationPopover,
 }: PdfPageCanvasProps) {
@@ -203,6 +205,7 @@ export default function PdfPageCanvas({
       <SegmentOverlay
         segments={classifiedSegments}
         selectedSegmentId={selectedSegmentId}
+        selectedText={selectedText}
         renderScale={RENDER_SCALE}
         onSelectSegment={handleSelectSegment}
       />

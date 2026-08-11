@@ -2,6 +2,7 @@ import type {
   PdfReadingSegment,
   PdfTextLine,
   PdfTextToken,
+  PdfTextWord,
 } from '../../../../shared/types/reader';
 import {
   buildRectsFromParts,
@@ -45,6 +46,20 @@ const getUniqueTokens = (
   return Array.from(tokensMap.values());
 };
 
+const getWords = (
+  segmentTokenParts: SegmentTokenPart[],
+): PdfTextWord[] => {
+  return segmentTokenParts.map((part) => {
+    return {
+      text: part.text,
+      x: part.x,
+      lineY: part.lineY,
+      width: part.width,
+      height: part.height,
+    };
+  });
+};
+
 export const buildSegment = (
   segmentTokenParts: SegmentTokenPart[],
   segmentIndex: number,
@@ -54,6 +69,7 @@ export const buildSegment = (
   const tokens = getUniqueTokens(segmentTokenParts);
   const lines = getUniqueLines(segmentTokenParts);
   const rects = buildRectsFromParts(segmentTokenParts);
+  const words = getWords(segmentTokenParts);
 
   const bounds = getRectsBounds(rects);
   const text = joinSegmentText(segmentTokenParts);
@@ -66,6 +82,7 @@ export const buildSegment = (
     lines,
     tokens,
     rects,
+    words,
 
     x: bounds.x,
     lineY: bounds.lineY,

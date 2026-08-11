@@ -136,6 +136,7 @@ export default function PdfDocumentReader({
             file={file}
             pageNumber={currentPageNumber}
             selectedSegmentId={selectedSegment?.id ?? null}
+            selectedText={translationSegment?.text ?? null}
             onSelectSegment={setSelectedSegment}
             translationPopover={
               selectedSegment ? (

@@ -9,6 +9,7 @@ export interface PdfTextToken {
   readonly height: number;
 
   readonly fontSize: number;
+  readonly fontFamily?: string;
   readonly hasEOL: boolean;
 }
 
@@ -33,6 +34,10 @@ export interface PdfTextRect {
   readonly height: number;
 }
 
+export interface PdfTextWord extends PdfTextRect {
+  readonly text: string;
+}
+
 export interface PdfReadingSegment {
   readonly id: string;
   readonly pageNumber: number;
@@ -41,6 +46,7 @@ export interface PdfReadingSegment {
   readonly lines: PdfTextLine[];
   readonly tokens: PdfTextToken[];
   readonly rects: PdfTextRect[];
+  readonly words: PdfTextWord[];
 
   readonly x: number;
   readonly lineY: number;
