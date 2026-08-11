@@ -1,4 +1,5 @@
 import type { ClassifiedPdfTextSegment } from '../../../shared/types/reader';
+import type { TranslationSourceSegment } from '../../translation/types/segment';
 import { findSentence } from '../lib/document-text/findSentence';
 import { createTranslationSegment } from '../lib/document-text/translationSegment';
 import {
@@ -16,7 +17,7 @@ interface UseTextSelectionParams {
 
 interface UseTextSelectionResult {
   readonly selectedSentence: PdfSentence | null;
-  readonly translationSegment: ClassifiedPdfTextSegment | null;
+  readonly translationSegment: TranslationSourceSegment | null;
   readonly textModelStatus: TextModelStatus;
   readonly sentencesCount: number;
   readonly isTextModelLoading: boolean;

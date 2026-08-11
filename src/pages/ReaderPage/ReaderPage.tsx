@@ -81,16 +81,6 @@ export default function ReaderPage() {
   return (
     <main className="reader-page">
       <AppHeader context={readerFile?.name ?? 'Document reader'} />
-      <header className="reader-page__header">
-        <div className="reader-page__header-content">
-          <p className="reader-page__eyebrow">Workspace</p>
-          <h1 className="reader-page__title">Reader</h1>
-        </div>
-
-        <Link to="/library" className="reader-page__upload-link">
-          Library
-        </Link>
-      </header>
 
       {isReaderPageLoading && (
         <section className="reader-page__empty">

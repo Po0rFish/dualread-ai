@@ -26,7 +26,16 @@
   - Let the user select a word or short phrase in the source text.
   - Translate the selection using the complete sentence as context.
   - Show the contextual meaning in a compact word card.
-  - Consider integration with the existing saved-words feature.
+  - Save words with their contextual translation, source sentence, page, and document.
+  - Add a vocabulary view for searching, reviewing, and deleting saved words.
+- Replace the permanent translation sidebar with a popover anchored to the selected PDF sentence.
+  - Translate and show cached results directly beside the source text.
+  - Move translation history, vocabulary, and settings into on-demand drawers or dialogs.
+- Add persistent bookmarks.
+  - Bookmark a page or a selected sentence.
+  - Store the document, page, segment, text preview, optional note, and creation date.
+  - Open the saved page and highlight its segment from the bookmarks view.
+  - Delete document bookmarks together with other document-related local data.
 
 ## Later
 
@@ -41,3 +50,7 @@
 - Add a visible local-data and privacy explanation: PDFs, extracted text, reading progress, and translations stay in the browser.
 - Add confirmation dialogs for destructive storage actions and explain what can or cannot be recovered.
 - Add focused automated tests for translation, storage cleanup, and proxy contracts.
+- Finish the responsive pass after the desktop interaction model is stable.
+  - Verify phone, tablet, and desktop layouts.
+  - Add PDF `Fit width` and keep the canvas and segment overlay scaled together.
+  - Use mobile bottom sheets for history, vocabulary, bookmarks, and settings.

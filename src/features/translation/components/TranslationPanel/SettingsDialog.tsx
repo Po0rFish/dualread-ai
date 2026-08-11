@@ -20,6 +20,7 @@ interface SettingsDialogProps {
   readonly setDeepLApiKey: (apiKey: string) => void;
   readonly clearDeepLApiKey: () => void;
   readonly onClose: () => void;
+  readonly autoFocusApiKey?: boolean;
 }
 
 export default function SettingsDialog({
@@ -34,6 +35,7 @@ export default function SettingsDialog({
   setDeepLApiKey,
   clearDeepLApiKey,
   onClose,
+  autoFocusApiKey = false,
 }: SettingsDialogProps) {
   const dialogRef = useRef<HTMLDialogElement | null>(null);
   const characterCount =
@@ -109,6 +111,7 @@ export default function SettingsDialog({
             isDisabled={isDisabled}
             setDeepLApiKey={setDeepLApiKey}
             clearDeepLApiKey={clearDeepLApiKey}
+            autoFocusApiKey={autoFocusApiKey}
           />
 
           {(deeplUsage || deeplUsageError) && (

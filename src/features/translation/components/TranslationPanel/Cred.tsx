@@ -6,6 +6,7 @@ interface CredProps {
   readonly isDisabled: boolean;
   readonly setDeepLApiKey: (apiKey: string) => void;
   readonly clearDeepLApiKey: () => void;
+  readonly autoFocusApiKey?: boolean;
 }
 
 export default function Cred({
@@ -14,6 +15,7 @@ export default function Cred({
   isDisabled,
   setDeepLApiKey,
   clearDeepLApiKey,
+  autoFocusApiKey = false,
 }: CredProps) {
   const disabledTitle = isDisabled
     ? 'Wait until translation request finishes.'
@@ -48,6 +50,7 @@ export default function Cred({
           data-lpignore="true"
           data-1p-ignore="true"
           disabled={isDisabled}
+          autoFocus={autoFocusApiKey}
         />
       </label>
 

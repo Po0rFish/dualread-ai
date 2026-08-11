@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import type { RenderTask } from 'pdfjs-dist';
 import type { ClassifiedPdfTextSegment } from '../../../shared/types/reader';
 import { buildReadingSegments } from '../lib/buildReadingSegments';
@@ -13,6 +14,7 @@ interface PdfPageCanvasProps {
   readonly pageNumber: number;
   readonly selectedSegmentId: string | null;
   readonly onSelectSegment: (segment: ClassifiedPdfTextSegment) => void;
+  readonly translationPopover?: ReactNode;
 }
 
 interface CanvasSize {
@@ -21,12 +23,36 @@ interface CanvasSize {
 }
 
 const RENDER_SCALE = 1.5;
+const POPOVER_EDGE_GAP = 12;
+const POPOVER_ANCHOR_GAP = 10;
+
+const getPopoverStyle = (
+  segment: ClassifiedPdfTextSegment,
+): CSSProperties => {
+  const top = Math.min(...segment.rects.map((rect) => rect.lineY));
+  const bottom = Math.max(
+    ...segment.rects.map((rect) => rect.lineY + rect.height),
+  );
+  const scaledTop = top * RENDER_SCALE;
+  const shouldOpenAbove = scaledTop > 390;
+
+  return {
+    position: 'absolute',
+    left: POPOVER_EDGE_GAP,
+    right: POPOVER_EDGE_GAP,
+    top: shouldOpenAbove
+      ? scaledTop - POPOVER_ANCHOR_GAP
+      : bottom * RENDER_SCALE + POPOVER_ANCHOR_GAP,
+    transform: shouldOpenAbove ? 'translateY(-100%)' : undefined,
+  };
+};
 
 export default function PdfPageCanvas({
   file,
   pageNumber,
   selectedSegmentId,
   onSelectSegment,
+  translationPopover,
 }: PdfPageCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -153,6 +179,10 @@ export default function PdfPageCanvas({
     onSelectSegment(segment);
   };
 
+  const selectedSegment = classifiedSegments.find((segment) => {
+    return segment.id === selectedSegmentId;
+  });
+
   return (
     <div
       className="pdf-page-canvas"
@@ -176,6 +206,12 @@ export default function PdfPageCanvas({
         renderScale={RENDER_SCALE}
         onSelectSegment={handleSelectSegment}
       />
+
+      {selectedSegment && translationPopover && (
+        <div style={getPopoverStyle(selectedSegment)}>
+          {translationPopover}
+        </div>
+      )}
     </div>
   );
 }

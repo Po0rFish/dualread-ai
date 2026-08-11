@@ -46,7 +46,7 @@
   border: 0;
   border-radius: var(--radius-sm);
   background: var(--color-accent);
-  color: #fff;
+  color: #2a2a2a;
   font-size: 12px;
   font-weight: 650;
   cursor: pointer;
@@ -96,7 +96,17 @@
 .translation-settings .translation-panel__credentials-input { -webkit-text-security: disc; }
 .translation-settings .translation-panel__provider-description,
 .translation-settings .translation-panel__credentials-hint { margin: 8px 0 0; color: var(--color-text-muted); font-size: 11px; line-height: 1.45; }
-.translation-settings .translation-panel__credentials-clear-button { margin-top: 6px; }
+.translation-settings .translation-panel__credentials-clear-button {
+  margin-top: 6px;
+  padding: 5px 8px;
+  border: 0;
+  border-radius: var(--radius-xs);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 11px;
+  cursor: pointer;
+}
+.translation-settings .translation-panel__credentials-clear-button:hover { background: var(--color-surface-hover); color: var(--color-text-strong); }
 .translation-settings .translation-panel__credentials-help { margin-top: 8px; }
 .translation-settings .translation-panel__credentials-link { display: inline-block; margin-top: 7px; color: var(--color-accent-light); font-size: 11px; }
 .translation-settings .translation-panel__credentials-warning { margin: 10px 0 0; color: var(--color-danger); font-size: 11px; }

@@ -36,8 +36,8 @@ export const useTranslationPanelActions = ({
   const [translatingItemIds, setTranslatingItemIds] = useState<Set<string>>(
     () => new Set(),
   );
-  const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
-  const [copyErrorItemId, setCopyErrorItemId] = useState<string | null>(null);
+  const [copiedTextKey, setCopiedTextKey] = useState<string | null>(null);
+  const [copyErrorTextKey, setCopyErrorTextKey] = useState<string | null>(null);
   const [deeplUsage, setDeepLUsage] = useState<DeepLUsageResponse | null>(null);
   const [deeplUsageError, setDeepLUsageError] = useState<string | null>(null);
 
@@ -58,34 +58,34 @@ export const useTranslationPanelActions = ({
     setDeepLUsageError(null);
   };
 
-  const handleCopy = (item: TranslationItem): void => {
-    if (!item.translatedText) {
+  const handleCopy = (text: string, feedbackKey: string): void => {
+    if (!text) {
       return;
     }
 
-    const copyTranslation = async (): Promise<void> => {
+    const copyText = async (): Promise<void> => {
       try {
-        await navigator.clipboard.writeText(item.translatedText ?? '');
-        setCopiedItemId(item.id);
-        setCopyErrorItemId(null);
+        await navigator.clipboard.writeText(text);
+        setCopiedTextKey(feedbackKey);
+        setCopyErrorTextKey(null);
 
         if (copyFeedbackTimerRef.current !== null) {
           window.clearTimeout(copyFeedbackTimerRef.current);
         }
 
         copyFeedbackTimerRef.current = window.setTimeout(() => {
-          setCopiedItemId((currentItemId) =>
-            currentItemId === item.id ? null : currentItemId,
+          setCopiedTextKey((currentTextKey) =>
+            currentTextKey === feedbackKey ? null : currentTextKey,
           );
           copyFeedbackTimerRef.current = null;
         }, 1200);
       } catch {
-        setCopiedItemId(null);
-        setCopyErrorItemId(item.id);
+        setCopiedTextKey(null);
+        setCopyErrorTextKey(feedbackKey);
       }
     };
 
-    void copyTranslation();
+    void copyText();
   };
 
   const handleTranslate = (item: TranslationItem): void => {
@@ -144,8 +144,8 @@ export const useTranslationPanelActions = ({
 
   return {
     hasActiveTranslation: translatingItemIds.size > 0,
-    copiedItemId,
-    copyErrorItemId,
+    copiedTextKey,
+    copyErrorTextKey,
     deeplUsage,
     deeplUsageError,
     clearDeepLUsage,

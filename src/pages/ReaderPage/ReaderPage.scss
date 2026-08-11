@@ -1,21 +1,6 @@
 .reader-page { min-height: 100vh; background: var(--color-bg); color: var(--color-text); }
 
-.reader-page__header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 24px;
-  padding: 28px 24px 18px;
-  border-bottom: 1px solid var(--color-border);
-  background: var(--color-bg-elevated);
-}
-
-.reader-page__eyebrow { margin: 0 0 5px; color: var(--color-accent-light); font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
-.reader-page__title { margin: 0; color: var(--color-text-strong); font-size: 24px; line-height: 1.1; letter-spacing: -.025em; }
-
-.reader-page__upload-link,
 .reader-page__empty-link { display: inline-flex; align-items: center; justify-content: center; min-height: 38px; padding: 8px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-surface); color: var(--color-text); font-weight: 600; text-decoration: none; }
-.reader-page__upload-link:hover,
 .reader-page__empty-link:hover { border-color: var(--color-border-strong); background: var(--color-surface-hover); color: var(--color-text-strong); }
 
 .reader-page__empty { max-width: 720px; margin: 64px auto; padding: 32px; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); box-shadow: var(--shadow-panel); }
@@ -25,6 +10,5 @@
 .reader-page__reader { padding: 16px; }
 
 @media (max-width: 720px) {
-  .reader-page__header { padding: 20px 16px 14px; }
   .reader-page__reader { padding: 8px; }
 }
