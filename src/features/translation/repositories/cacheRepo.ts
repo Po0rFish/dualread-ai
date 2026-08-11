@@ -164,6 +164,34 @@ export const cacheRepo = {
     await transaction.done;
   },
 
+  async deleteOrphans(existingDocumentIds: string[]): Promise<void> {
+    const database = await getTranslationsDatabase();
+    const existingDocumentIdsSet = new Set(existingDocumentIds);
+    const items = await database.getAll(TRANSLATIONS_STORE);
+    const orphanIds = items
+      .filter((item) => {
+        return !existingDocumentIdsSet.has(item.documentId);
+      })
+      .map((item) => {
+        return item.id;
+      });
+
+    if (orphanIds.length === 0) {
+      return;
+    }
+
+    const transaction = database.transaction(
+      TRANSLATIONS_STORE,
+      'readwrite',
+    );
+
+    orphanIds.forEach((id) => {
+      transaction.store.delete(id);
+    });
+
+    await transaction.done;
+  },
+
   async clear(): Promise<void> {
     const database = await getTranslationsDatabase();
 

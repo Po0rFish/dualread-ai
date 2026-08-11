@@ -9,6 +9,7 @@ import {
   MAX_LIBRARY_DOCUMENTS,
 } from '../repositories/documentRepository';
 import { textModelRepo } from '../../pdf-reader/repositories/textModelRepo';
+import { cacheRepo } from '../../translation/repositories/cacheRepo';
 import type {
   CreateLibraryDocumentParams,
   LibraryDocument,
@@ -30,14 +31,18 @@ interface UseLibraryDocumentsResult {
   readonly clearLibraryMessage: () => void;
 }
 
-const cleanupOrphanProgress = (
+const cleanupOrphanDocumentData = async (
   documents: LibraryDocumentInfo[],
-): void => {
-  deleteOrphanReadingProgress(
-    documents.map((document) => {
-      return document.id;
-    }),
-  );
+): Promise<void> => {
+  const documentIds = documents.map((document) => {
+    return document.id;
+  });
+
+  await Promise.all([
+    textModelRepo.deleteOrphans(documentIds),
+    cacheRepo.deleteOrphans(documentIds),
+  ]);
+  deleteOrphanReadingProgress(documentIds);
 };
 
 export const useLibraryDocuments = (): UseLibraryDocumentsResult => {
@@ -53,7 +58,7 @@ export const useLibraryDocuments = (): UseLibraryDocumentsResult => {
     try {
       const nextDocuments = await documentsRepository.getAllInfo();
 
-      cleanupOrphanProgress(nextDocuments);
+      await cleanupOrphanDocumentData(nextDocuments);
 
       setDocuments(nextDocuments);
       setLibraryMessage(null);
@@ -77,7 +82,7 @@ export const useLibraryDocuments = (): UseLibraryDocumentsResult => {
 
         const nextDocuments = await documentsRepository.getAllInfo();
 
-        cleanupOrphanProgress(nextDocuments);
+        await cleanupOrphanDocumentData(nextDocuments);
 
         setDocuments(nextDocuments);
         setLibraryMessage(null);
@@ -118,7 +123,7 @@ export const useLibraryDocuments = (): UseLibraryDocumentsResult => {
 
         const nextDocuments = await documentsRepository.getAllInfo();
 
-        cleanupOrphanProgress(nextDocuments);
+        await cleanupOrphanDocumentData(nextDocuments);
 
         setDocuments(nextDocuments);
         setSelectedDocument(document);
@@ -139,11 +144,12 @@ export const useLibraryDocuments = (): UseLibraryDocumentsResult => {
       try {
         await documentsRepository.delete(documentId);
         await textModelRepo.delete(documentId);
+        await cacheRepo.deleteByDocumentId({ documentId });
         deleteReadingProgress(documentId);
 
         const nextDocuments = await documentsRepository.getAllInfo();
 
-        cleanupOrphanProgress(nextDocuments);
+        await cleanupOrphanDocumentData(nextDocuments);
 
         setDocuments(nextDocuments);
 

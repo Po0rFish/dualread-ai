@@ -2,8 +2,8 @@
 
 ## Before v0.20.0
 
-- Delete translation cache and other related local data when a PDF is deleted.
-- Remove orphaned local data left by missing documents.
+- [x] Delete translation cache and other related local data when a PDF is deleted.
+- [x] Remove orphaned local data left by missing documents.
 - Finish responsive layouts for the home, library, and reader pages.
 - Finish the visual pass for the home and library pages so they match the dark reader workspace.
 - Add PDF zoom controls with synchronized canvas and segment-overlay scaling.

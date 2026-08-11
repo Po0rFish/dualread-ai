@@ -45,6 +45,31 @@ export const textModelRepo = {
     await database.delete(TEXT_MODELS_STORE, documentId);
   },
 
+  async deleteOrphans(existingDocumentIds: string[]): Promise<void> {
+    const database = await getTextModelsDatabase();
+    const existingDocumentIdsSet = new Set(existingDocumentIds);
+    const textModels = await database.getAll(TEXT_MODELS_STORE);
+    const orphanDocumentIds = textModels
+      .filter((textModel) => {
+        return !existingDocumentIdsSet.has(textModel.documentId);
+      })
+      .map((textModel) => {
+        return textModel.documentId;
+      });
+
+    if (orphanDocumentIds.length === 0) {
+      return;
+    }
+
+    const transaction = database.transaction(TEXT_MODELS_STORE, 'readwrite');
+
+    orphanDocumentIds.forEach((documentId) => {
+      transaction.store.delete(documentId);
+    });
+
+    await transaction.done;
+  },
+
   async clear(): Promise<void> {
     const database = await getTextModelsDatabase();
 
