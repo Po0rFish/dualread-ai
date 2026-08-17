@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { DEEPL_API_KEY_HELP_URL } from './helpers';
 
 interface CredProps {
@@ -17,9 +18,16 @@ export default function Cred({
   clearDeepLApiKey,
   autoFocusApiKey = false,
 }: CredProps) {
+  const apiKeyInputRef = useRef<HTMLInputElement | null>(null);
   const disabledTitle = isDisabled
     ? 'Wait until translation request finishes.'
     : undefined;
+
+  useEffect(() => {
+    if (autoFocusApiKey) {
+      apiKeyInputRef.current?.focus();
+    }
+  }, [autoFocusApiKey]);
 
   return (
     <div className="translation-panel__credentials">
@@ -29,6 +37,7 @@ export default function Cred({
         </span>
 
         <input
+          ref={apiKeyInputRef}
           className="translation-panel__credentials-input"
           type="text"
           name="deepl-api-key"

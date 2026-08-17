@@ -1,10 +1,13 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { documentsRepository } from '../../features/library/repositories/documentRepository';
 import type { LibraryDocument } from '../../features/library/types/library';
-import PdfDocumentReader from '../../features/pdf-reader/components/PdfDocumentReader';
 import AppHeader from '../../shared/components/AppHeader';
 import './ReaderPage.scss';
+
+const PdfDocumentReader = lazy(
+  () => import('../../features/pdf-reader/components/PdfDocumentReader'),
+);
 
 const createFileFromLibraryDocument = (
   document: LibraryDocument,
@@ -124,11 +127,19 @@ export default function ReaderPage() {
 
       {!isReaderPageLoading && readerFile && (
         <section className="reader-page__reader">
-          <PdfDocumentReader
-            key={documentId}
-            file={readerFile}
-            documentId={documentId}
-          />
+          <Suspense
+            fallback={
+              <section className="reader-page__empty">
+                <h2 className="reader-page__empty-title">Loading reader</h2>
+              </section>
+            }
+          >
+            <PdfDocumentReader
+              key={documentId}
+              file={readerFile}
+              documentId={documentId}
+            />
+          </Suspense>
         </section>
       )}
     </main>

@@ -1,19 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { getErrorMessage } from '../components/TranslationPanel/helpers';
-import {
-  getDeepLUsage,
-  translateText,
-} from '../services/translationService';
-import type { DeepLUsageResponse } from '../types/deepl';
-import type { TranslationProvider } from '../types/service';
+import { translateText } from '../services/translationService';
 import type { TranslationItem } from '../types/translation';
 
 interface UseTranslationPanelActionsParams {
-  readonly selectedProvider: TranslationProvider;
-  readonly isTranslationProviderReady: boolean;
-  readonly getApiKeyForProvider: (
-    provider: TranslationProvider,
-  ) => string | undefined;
+  readonly isDeepLReady: boolean;
+  readonly getDeepLApiKey: () => string | undefined;
   readonly onUpdateItem: (
     itemId: string,
     translatedText: string,
@@ -25,9 +17,8 @@ interface UseTranslationPanelActionsParams {
 }
 
 export const useTranslationPanelActions = ({
-  selectedProvider,
-  isTranslationProviderReady,
-  getApiKeyForProvider,
+  isDeepLReady,
+  getDeepLApiKey,
   onUpdateItem,
   onMarkItemError,
 }: UseTranslationPanelActionsParams) => {
@@ -38,8 +29,6 @@ export const useTranslationPanelActions = ({
   );
   const [copiedTextKey, setCopiedTextKey] = useState<string | null>(null);
   const [copyErrorTextKey, setCopyErrorTextKey] = useState<string | null>(null);
-  const [deeplUsage, setDeepLUsage] = useState<DeepLUsageResponse | null>(null);
-  const [deeplUsageError, setDeepLUsageError] = useState<string | null>(null);
 
   useEffect(() => {
     return () => {
@@ -51,11 +40,6 @@ export const useTranslationPanelActions = ({
 
   const isItemTranslating = (itemId: string): boolean => {
     return translatingItemIds.has(itemId);
-  };
-
-  const clearDeepLUsage = (): void => {
-    setDeepLUsage(null);
-    setDeepLUsageError(null);
   };
 
   const handleCopy = (text: string, feedbackKey: string): void => {
@@ -90,7 +74,7 @@ export const useTranslationPanelActions = ({
 
   const handleTranslate = (item: TranslationItem): void => {
     if (
-      !isTranslationProviderReady ||
+      !isDeepLReady ||
       activeItemIdsRef.current.has(item.id)
     ) {
       return;
@@ -108,25 +92,12 @@ export const useTranslationPanelActions = ({
         const translationResult = await translateText({
           sourceText: item.sourceText,
           targetLanguage: item.targetLanguage,
-          provider: selectedProvider,
-          apiKey: getApiKeyForProvider(selectedProvider),
+          provider: 'deepl',
+          apiKey: getDeepLApiKey(),
         });
 
         await onUpdateItem(item.id, translationResult.translatedText);
 
-        if (selectedProvider === 'deepl') {
-          const apiKey = getApiKeyForProvider(selectedProvider);
-
-          if (apiKey) {
-            try {
-              setDeepLUsage(await getDeepLUsage(apiKey));
-              setDeepLUsageError(null);
-            } catch {
-              setDeepLUsage(null);
-              setDeepLUsageError('Usage could not be refreshed.');
-            }
-          }
-        }
       } catch (error) {
         onMarkItemError(item.id, getErrorMessage(error));
       } finally {
@@ -143,12 +114,8 @@ export const useTranslationPanelActions = ({
   };
 
   return {
-    hasActiveTranslation: translatingItemIds.size > 0,
     copiedTextKey,
     copyErrorTextKey,
-    deeplUsage,
-    deeplUsageError,
-    clearDeepLUsage,
     isItemTranslating,
     handleCopy,
     handleTranslate,

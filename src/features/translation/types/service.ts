@@ -1,12 +1,6 @@
 import type { TranslationLanguage } from './cache';
 
-export type TranslationProvider = 'mock' | 'deepl';
-
-export interface TranslationProviderOption {
-  readonly value: TranslationProvider;
-  readonly label: string;
-  readonly description: string;
-}
+export type TranslationProvider = 'deepl';
 
 export interface TranslationProviderTranslateParams {
   readonly sourceText: string;

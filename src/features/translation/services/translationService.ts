@@ -3,14 +3,7 @@ import type {
   TranslateTextResult,
 } from '../types/service';
 import { deeplProvider } from './providers/deeplProvider';
-import { mockProvider } from './providers/mockProvider';
 import type { DeepLUsageResponse } from '../types/deepl';
-
-const createUnsupportedProviderError = (provider: never): Error => {
-  return new Error(
-    `Unsupported translation provider "${String(provider)}".`,
-  );
-};
 
 export const translateText = async ({
   sourceText,
@@ -18,21 +11,11 @@ export const translateText = async ({
   provider,
   apiKey,
 }: TranslateTextParams): Promise<TranslateTextResult> => {
-  const params = {
+  return deeplProvider.translate({
     sourceText,
     targetLanguage,
     apiKey,
-  };
-
-  if (provider === 'mock') {
-    return mockProvider.translate(params);
-  }
-
-  if (provider === 'deepl') {
-    return deeplProvider.translate(params);
-  }
-
-  throw createUnsupportedProviderError(provider);
+  }).then((result) => ({ ...result, provider }));
 };
 
 export const getDeepLUsage = async (

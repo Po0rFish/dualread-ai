@@ -24,11 +24,8 @@ interface CreateUnexpectedResponseErrorParams {
 }
 
 const getProviderLabel = (provider: TranslationProvider): string => {
-  if (provider === 'deepl') {
-    return 'DeepL';
-  }
-
-  return 'Mock';
+  void provider;
+  return 'DeepL';
 };
 
 const getRequestErrorMessage = ({

@@ -1,10 +1,12 @@
-import { useState } from 'react';
-import PdfDocumentReader from '../../features/pdf-reader/components/PdfDocumentReader';
-import { getPdfPagesCount } from '../../features/pdf-reader/lib/getPdfPagesCount';
+import { lazy, Suspense, useState } from 'react';
 import PdfUploader from '../../features/pdf-upload/components/PdfUploader';
 import { useLibraryDocuments } from '../../features/library/hooks/useLibraryDocuments';
 import AppHeader from '../../shared/components/AppHeader';
 import './HomePage.scss';
+
+const PdfDocumentReader = lazy(
+  () => import('../../features/pdf-reader/components/PdfDocumentReader'),
+);
 
 interface SelectedDocumentFile {
   readonly file: File;
@@ -26,6 +28,9 @@ export default function HomePage() {
       try {
         setHomePageMessage(null);
 
+        const { getPdfPagesCount } = await import(
+          '../../features/pdf-reader/lib/getPdfPagesCount'
+        );
         const pagesCount = await getPdfPagesCount(file);
 
         const savedDocument = await saveDocument({
@@ -93,11 +98,13 @@ export default function HomePage() {
 
       {selectedDocumentFile && (
         <section className="home-page__reader">
-          <PdfDocumentReader
-            key={selectedDocumentFile.documentId}
-            file={selectedDocumentFile.file}
-            documentId={selectedDocumentFile.documentId}
-          />
+          <Suspense fallback={<p className="home-page__message">Loading reader...</p>}>
+            <PdfDocumentReader
+              key={selectedDocumentFile.documentId}
+              file={selectedDocumentFile.file}
+              documentId={selectedDocumentFile.documentId}
+            />
+          </Suspense>
         </section>
       )}
     </main>

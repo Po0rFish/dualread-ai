@@ -2,22 +2,15 @@ import { useState } from 'react';
 import type { CSSProperties } from 'react';
 import { useTranslationCredentials } from '../../context/useCred';
 import { useTranslationPanelActions } from '../../hooks/useTranslationPanelActions';
-import type {
-  TranslationProvider,
-  TranslationProviderOption,
-} from '../../types/service';
 import type { TranslationItem } from '../../types/translation';
-import SettingsDialog from '../TranslationPanel/SettingsDialog';
 import { getTranslateButtonText } from '../TranslationPanel/helpers';
 import './TranslationPopover.scss';
 
 interface TranslationPopoverProps {
   readonly item: TranslationItem | null;
-  readonly selectedProvider: TranslationProvider;
-  readonly providerOptions: TranslationProviderOption[];
-  readonly onProviderChange: (provider: TranslationProvider) => void;
   readonly onUpdateItem: (itemId: string, translatedText: string) => Promise<void>;
   readonly onMarkItemError: (itemId: string, errorMessage: string) => void;
+  readonly onOpenSettings: (focusApiKey?: boolean) => void;
   readonly onClose: () => void;
 }
 
@@ -47,57 +40,31 @@ const getInitialFontSize = (): PopoverFontSize => {
 
 export default function TranslationPopover({
   item,
-  selectedProvider,
-  providerOptions,
-  onProviderChange,
   onUpdateItem,
   onMarkItemError,
+  onOpenSettings,
   onClose,
 }: TranslationPopoverProps) {
-  const [areSettingsOpen, setAreSettingsOpen] = useState(false);
-  const [shouldFocusApiKey, setShouldFocusApiKey] = useState(false);
   const [fontSize, setFontSize] = useState<PopoverFontSize>(getInitialFontSize);
   const {
     deeplApiKey,
-    setDeepLApiKey,
-    clearDeepLApiKey,
-    getApiKeyForProvider,
+    getDeepLApiKey,
   } = useTranslationCredentials();
 
-  const isDeepLSelected = selectedProvider === 'deepl';
   const hasDeepLApiKey = deeplApiKey.trim().length > 0;
-  const isTranslationProviderReady = !isDeepLSelected || hasDeepLApiKey;
+  const isDeepLReady = hasDeepLApiKey;
   const {
-    hasActiveTranslation,
     copiedTextKey,
     copyErrorTextKey,
-    deeplUsage,
-    deeplUsageError,
-    clearDeepLUsage,
     isItemTranslating,
     handleCopy,
     handleTranslate,
   } = useTranslationPanelActions({
-    selectedProvider,
-    isTranslationProviderReady,
-    getApiKeyForProvider,
+    isDeepLReady,
+    getDeepLApiKey,
     onUpdateItem,
     onMarkItemError,
   });
-
-  const openSettings = (focusApiKey = false): void => {
-    setShouldFocusApiKey(focusApiKey);
-    setAreSettingsOpen(true);
-  };
-
-  const handleProviderChange = (provider: TranslationProvider): void => {
-    if (hasActiveTranslation) {
-      return;
-    }
-
-    clearDeepLUsage();
-    onProviderChange(provider);
-  };
 
   const isTranslating = item ? isItemTranslating(item.id) : false;
   const sourceCopyKey = item ? `${item.id}:source` : '';
@@ -149,7 +116,7 @@ export default function TranslationPopover({
             type="button"
             className="translation-popover__text-button"
             onClick={() => {
-              openSettings();
+              onOpenSettings();
             }}
           >
             Settings
@@ -205,8 +172,8 @@ export default function TranslationPopover({
               type="button"
               className="translation-popover__translate-button"
               onClick={() => {
-                if (!isTranslationProviderReady) {
-                  openSettings(true);
+                if (!isDeepLReady) {
+                  onOpenSettings(true);
                   return;
                 }
 
@@ -214,7 +181,7 @@ export default function TranslationPopover({
               }}
               disabled={isTranslating}
             >
-              {isTranslationProviderReady
+              {isDeepLReady
                 ? getTranslateButtonText(item, isTranslating)
                 : 'Enter API key'}
             </button>
@@ -235,31 +202,6 @@ export default function TranslationPopover({
         </>
       )}
 
-      {areSettingsOpen && (
-        <SettingsDialog
-          selectedProvider={selectedProvider}
-          providerOptions={providerOptions}
-          isDisabled={hasActiveTranslation}
-          deeplApiKey={deeplApiKey}
-          hasDeepLApiKey={hasDeepLApiKey}
-          deeplUsage={deeplUsage}
-          deeplUsageError={deeplUsageError}
-          autoFocusApiKey={shouldFocusApiKey}
-          onProviderChange={handleProviderChange}
-          setDeepLApiKey={(apiKey) => {
-            clearDeepLUsage();
-            setDeepLApiKey(apiKey);
-          }}
-          clearDeepLApiKey={() => {
-            clearDeepLUsage();
-            clearDeepLApiKey();
-          }}
-          onClose={() => {
-            setAreSettingsOpen(false);
-            setShouldFocusApiKey(false);
-          }}
-        />
-      )}
     </aside>
   );
 }

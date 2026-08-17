@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ClassifiedPdfTextSegment } from '../../../shared/types/reader';
 import TranslationPopover from '../../translation/components/TranslationPopover';
+import TranslationSettingsDrawer from '../../translation/components/TranslationSettingsDrawer';
 import { useTranslationItems } from '../../translation/hooks/useTranslationItems';
 import { usePdfNav } from '../hooks/usePdfNav';
 import { useTextSelection } from '../hooks/useTextSelection';
 import PdfPageCanvas from './PdfPageCanvas';
 import ReaderNav from './ReaderNav';
-import { useTranslationProvider } from '../../translation/hooks/useTranslationProvider';
-import type { TranslationProvider } from '../../translation/types/service';
 import './PdfDocumentReader.scss';
 
 interface PdfDocumentReaderProps {
@@ -21,7 +20,11 @@ export default function PdfDocumentReader({
 }: PdfDocumentReaderProps) {
   const [selectedSegment, setSelectedSegment] =
     useState<ClassifiedPdfTextSegment | null>(null);
+  const [areSettingsOpen, setAreSettingsOpen] = useState(false);
+  const [shouldFocusApiKey, setShouldFocusApiKey] = useState(false);
   const addedTranslationKeyRef = useRef<string | null>(null);
+  const settingsButtonRef = useRef<HTMLButtonElement | null>(null);
+  const settingsTriggerRef = useRef<HTMLElement | null>(null);
 
   const handlePageChange = useCallback((): void => {
     setSelectedSegment(null);
@@ -40,16 +43,13 @@ export default function PdfDocumentReader({
     documentId,
     onPageChange: handlePageChange,
   });
-  const { selectedProvider, providerOptions, selectProvider } = useTranslationProvider();
-
   const {
     translationItems,
     addSegmentToTranslation,
     updateTranslationItem,
     markTranslationItemError,
-    clearTranslationItems,
   } = useTranslationItems({
-    provider: selectedProvider,
+    provider: 'deepl',
   });
 
   const {
@@ -69,7 +69,7 @@ export default function PdfDocumentReader({
       return;
     }
 
-    const translationKey = `${translationSegment.id}:${translationSegment.sourceTextHash ?? ''}:${selectedProvider}`;
+    const translationKey = `${translationSegment.id}:${translationSegment.sourceTextHash ?? ''}:deepl`;
 
     if (addedTranslationKeyRef.current === translationKey) {
       return;
@@ -77,7 +77,7 @@ export default function PdfDocumentReader({
 
     addedTranslationKeyRef.current = translationKey;
     addSegmentToTranslation(translationSegment);
-  }, [addSegmentToTranslation, selectedProvider, translationSegment]);
+  }, [addSegmentToTranslation, translationSegment]);
 
   const activeTranslationItem = translationSegment
     ? translationItems.find((item) => {
@@ -85,28 +85,39 @@ export default function PdfDocumentReader({
           translationSegment.sourceTextHash &&
           item.sourceTextHash === translationSegment.sourceTextHash
         ) {
-          return item.provider === selectedProvider;
+          return item.provider === 'deepl';
         }
 
         return (
           item.sourceText === translationSegment.text &&
           item.pageNumber === translationSegment.pageNumber &&
-          item.provider === selectedProvider
+          item.provider === 'deepl'
         );
       }) ?? null
     : null;
-  const handleProviderChange = useCallback(
-    (provider: TranslationProvider): void => {
-      if (provider === selectedProvider) {
-        return;
-      }
+  const openSettings = useCallback((focusApiKey = false): void => {
+    settingsTriggerRef.current =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : settingsButtonRef.current;
+    setShouldFocusApiKey(focusApiKey);
+    setAreSettingsOpen(true);
+  }, []);
 
-      clearTranslationItems();
-      setSelectedSegment(null);
-      selectProvider(provider);
-    },
-    [clearTranslationItems, selectProvider, selectedProvider],
-  );
+  const closeSettings = useCallback((): void => {
+    setAreSettingsOpen(false);
+    setShouldFocusApiKey(false);
+    window.requestAnimationFrame(() => {
+      const trigger = settingsTriggerRef.current;
+      settingsTriggerRef.current = null;
+
+      if (trigger?.isConnected) {
+        trigger.focus();
+      } else {
+        settingsButtonRef.current?.focus();
+      }
+    });
+  }, []);
   return (
     <section
       className="pdf-document-reader"
@@ -127,7 +138,22 @@ export default function PdfDocumentReader({
           onPageInputChange={setPageInputValue}
           onGoToPage={goToPage}
         />
-
+        <button
+          ref={settingsButtonRef}
+          type="button"
+          className="pdf-document-reader__settings-button"
+          aria-expanded={areSettingsOpen}
+          aria-controls="translation-settings-drawer"
+          onClick={() => {
+            if (areSettingsOpen) {
+              closeSettings();
+            } else {
+              openSettings();
+            }
+          }}
+        >
+          Settings
+        </button>
       </div>
 
       <div className="pdf-document-reader__content">
@@ -142,11 +168,9 @@ export default function PdfDocumentReader({
               selectedSegment ? (
                 <TranslationPopover
                   item={activeTranslationItem}
-                  selectedProvider={selectedProvider}
-                  providerOptions={providerOptions}
-                  onProviderChange={handleProviderChange}
                   onUpdateItem={updateTranslationItem}
                   onMarkItemError={markTranslationItemError}
+                  onOpenSettings={openSettings}
                   onClose={() => {
                     setSelectedSegment(null);
                   }}
@@ -155,6 +179,14 @@ export default function PdfDocumentReader({
             }
           />
         </div>
+        {areSettingsOpen && (
+          <div id="translation-settings-drawer">
+            <TranslationSettingsDrawer
+              autoFocusApiKey={shouldFocusApiKey}
+              onClose={closeSettings}
+            />
+          </div>
+        )}
       </div>
     </section>
   );

@@ -100,10 +100,6 @@ export const cacheRepo = {
       return null;
     }
 
-    if (provider !== 'mock') {
-      return null;
-    }
-
     const migratedItem: TranslationCacheItem = {
       ...legacyItem,
       id,

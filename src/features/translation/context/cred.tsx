@@ -8,7 +8,6 @@ import {
   TranslationCredentialsContext,
   type TranslationCredentialsContextValue,
 } from './ctx';
-import type { TranslationProvider } from '../types/service';
 
 interface TranslationCredentialsProviderProps {
   readonly children: ReactNode;
@@ -27,28 +26,21 @@ export const TranslationCredentialsProvider = ({
     setDeeplApiKey('');
   }, []);
 
-  const getApiKeyForProvider = useCallback(
-    (provider: TranslationProvider): string | undefined => {
-      if (provider === 'deepl') {
-        return deeplApiKey.trim();
-      }
-
-      return undefined;
-    },
-    [deeplApiKey],
-  );
+  const getDeepLApiKey = useCallback((): string | undefined => {
+    return deeplApiKey.trim() || undefined;
+  }, [deeplApiKey]);
 
   const contextValue = useMemo<TranslationCredentialsContextValue>(() => {
     return {
       deeplApiKey,
       setDeepLApiKey,
       clearDeepLApiKey,
-      getApiKeyForProvider,
+      getDeepLApiKey,
     };
   }, [
     clearDeepLApiKey,
     deeplApiKey,
-    getApiKeyForProvider,
+    getDeepLApiKey,
     setDeepLApiKey,
   ]);
 

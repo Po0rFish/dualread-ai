@@ -7,7 +7,8 @@
 - Finish responsive layouts for the home, library, and reader pages.
 - Finish the visual pass for the home and library pages so they match the dark reader workspace.
 - Add PDF zoom controls with synchronized canvas and segment-overlay scaling.
-- Verify the complete PDF-to-translation flow and error states.
+- Verify the complete PDF-to-translation flow and error states using the
+  [smoke checklist](./smoke-checklist.md).
   - Upload, save, reopen, navigate, select, translate, copy, clear the panel, and reuse a cached translation.
   - Check missing, invalid, and expired DeepL keys.
   - Check network failures, quota errors, malformed proxy responses, and usage-refresh failures.
