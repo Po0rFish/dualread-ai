@@ -8,6 +8,7 @@ import { classifyTextSegments } from '../lib/classifyTextSegments';
 import { extractPdfText } from '../lib/extractPdfText';
 import { pdfjsLib } from '../lib/pdfjsClient';
 import SegmentOverlay from './SegmentOverlay';
+import TextInspector from './TextInspector';
 
 interface PdfPageCanvasProps {
   readonly file: File;
@@ -186,6 +187,7 @@ export default function PdfPageCanvas({
   });
 
   return (
+    <>
     <div
       className="pdf-page-canvas"
       style={{
@@ -216,5 +218,7 @@ export default function PdfPageCanvas({
         </div>
       )}
     </div>
+    <TextInspector pageNumber={pageNumber} segments={classifiedSegments} />
+    </>
   );
 }
