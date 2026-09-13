@@ -1,4 +1,5 @@
 import type { TranslationLanguage } from './cache';
+import type { TranslationPart } from './translation';
 
 export type TranslationProvider = 'deepl';
 
@@ -14,6 +15,7 @@ export interface TranslateTextParams
 }
 
 export interface TranslateTextResult {
+  readonly byParts?: readonly TranslationPart[];
   readonly sourceText: string;
   readonly translatedText: string;
   readonly targetLanguage: TranslationLanguage;

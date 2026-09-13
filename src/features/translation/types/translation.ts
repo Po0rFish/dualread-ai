@@ -15,7 +15,13 @@ export type TranslationItemStatus =
   | 'translated'
   | 'error';
 
+export interface TranslationPart {
+  readonly source: string;
+  readonly meaning: string;
+}
+
 export interface TranslationItem {
+  readonly byParts?: readonly TranslationPart[];
   readonly id: string;
   readonly sourceText: string;
   readonly sourceType: TranslationSourceType;

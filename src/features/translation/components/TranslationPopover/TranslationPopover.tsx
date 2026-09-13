@@ -2,13 +2,14 @@ import { useState } from 'react';
 import type { CSSProperties } from 'react';
 import { useTranslationCredentials } from '../../context/useCred';
 import { useTranslationPanelActions } from '../../hooks/useTranslationPanelActions';
-import type { TranslationItem } from '../../types/translation';
+import type { TranslationItem, TranslationPart } from '../../types/translation';
 import { getTranslateButtonText } from '../TranslationPanel/helpers';
+import ByParts from '../TranslationPanel/ByParts';
 import './TranslationPopover.scss';
 
 interface TranslationPopoverProps {
   readonly item: TranslationItem | null;
-  readonly onUpdateItem: (itemId: string, translatedText: string) => Promise<void>;
+  readonly onUpdateItem: (itemId: string, translatedText: string, byParts?: readonly TranslationPart[]) => Promise<void>;
   readonly onMarkItemError: (itemId: string, errorMessage: string) => void;
   readonly onOpenSettings: (focusApiKey?: boolean) => void;
   readonly onClose: () => void;
@@ -185,6 +186,13 @@ export default function TranslationPopover({
                 ? getTranslateButtonText(item, isTranslating)
                 : 'Enter API key'}
             </button>
+          )}
+
+          {item.translatedText && (
+            <ByParts
+              key={JSON.stringify([item.id, item.sourceText, item.targetLanguage, item.provider])}
+              item={item}
+            />
           )}
 
           {!isTranslating && item.translationError && (

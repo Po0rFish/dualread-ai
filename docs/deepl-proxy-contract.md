@@ -35,6 +35,16 @@ Authorization: DeepL-Auth-Key <api-key>
 
 The API key is entered by the user in the app UI and is kept only in React memory state.
 
+Sentence translation sends one XML-tagged text item with `tag_handling: "xml"`,
+`outline_detection: false`, and `non_splitting_tags: ["r", "c1", "c2", ...]`.
+The `r` root contains locally generated source chunks in uniquely named tags.
+Both proxies forward these fields unchanged. `show_billed_characters` remains true.
+The client strips response tags for natural translation and exposes By parts only
+when every chunk has exactly one non-empty, unnested translated tag and no unknown
+tags or unmapped text occur. Invalid mappings and older cached translations show
+an unavailable state; expanding By parts never sends a request. Mapping stays in
+React state; translation cache keys and stored natural translations are unchanged.
+
 ## Usage request
 
 After a successful DeepL translation, the frontend uses the same proxy

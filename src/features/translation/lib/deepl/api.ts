@@ -11,6 +11,7 @@ import type {
 } from '../../types/deepl';
 
 interface CreateDeepLRequestBodyParams {
+  readonly tags?: string[];
   readonly sourceText: string;
   readonly targetLanguage: TranslationLanguage;
 }
@@ -55,6 +56,7 @@ const isDeepLTranslationResponseItem = (
 };
 
 export const createDeepLRequestBody = ({
+  tags,
   sourceText,
   targetLanguage,
 }: CreateDeepLRequestBodyParams): DeepLTranslateRequestBody => {
@@ -62,10 +64,12 @@ export const createDeepLRequestBody = ({
     text: [sourceText],
     target_lang: getDeepLTargetLanguage(targetLanguage),
     show_billed_characters: true,
+    ...(tags ? { tag_handling: 'xml' as const, outline_detection: false, non_splitting_tags: tags } : {}),
   };
 };
 
 export const createDeepLProxyRequestInit = ({
+  tags,
   sourceText,
   targetLanguage,
   apiKey,
@@ -78,6 +82,7 @@ export const createDeepLProxyRequestInit = ({
     },
     body: JSON.stringify(
       createDeepLRequestBody({
+        tags,
         sourceText,
         targetLanguage,
       }),

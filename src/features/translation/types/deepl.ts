@@ -2,6 +2,9 @@ export interface DeepLTranslateRequestBody {
   readonly text: string[];
   readonly target_lang: string;
   readonly show_billed_characters: boolean;
+  readonly tag_handling?: 'xml';
+  readonly outline_detection?: boolean;
+  readonly non_splitting_tags?: string[];
 }
 
 export interface DeepLTranslationResponseItem {

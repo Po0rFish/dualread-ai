@@ -7,7 +7,7 @@ import { classifyTextSegments } from '../lib/classifyTextSegments';
 import { extractPdfText } from '../lib/extractPdfText';
 import { pdfjsLib } from '../lib/pdfjsClient';
 import SegmentOverlay from './SegmentOverlay';
-import TextInspector from './TextInspector';
+import TextInspector from '../../text-inspector';
 
 interface PdfPageCanvasProps {
   readonly file: File;

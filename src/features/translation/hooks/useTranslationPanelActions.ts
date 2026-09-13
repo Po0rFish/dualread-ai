@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { getErrorMessage } from '../components/TranslationPanel/helpers';
 import { translateText } from '../services/translationService';
-import type { TranslationItem } from '../types/translation';
+import type { TranslationItem, TranslationPart } from '../types/translation';
 
 interface UseTranslationPanelActionsParams {
   readonly isDeepLReady: boolean;
@@ -9,6 +9,7 @@ interface UseTranslationPanelActionsParams {
   readonly onUpdateItem: (
     itemId: string,
     translatedText: string,
+    byParts?: readonly TranslationPart[],
   ) => Promise<void>;
   readonly onMarkItemError: (
     itemId: string,
@@ -96,7 +97,7 @@ export const useTranslationPanelActions = ({
           apiKey: getDeepLApiKey(),
         });
 
-        await onUpdateItem(item.id, translationResult.translatedText);
+        await onUpdateItem(item.id, translationResult.translatedText, translationResult.byParts);
 
       } catch (error) {
         onMarkItemError(item.id, getErrorMessage(error));

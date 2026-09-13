@@ -1,4 +1,5 @@
 import { DEEPL_TRANSLATE_PROXY_URL } from '../../config/deeplConfig';
+import { createTaggedTranslation, parseTaggedTranslation } from '../../lib/deepl/taggedTranslation';
 import {
   createDeepLProxyRequestInit,
   createDeepLUsageProxyRequestInit,
@@ -88,9 +89,11 @@ export const deeplProvider = {
       });
     }
 
+    const tagged = createTaggedTranslation(sourceText);
     const response = await requestDeepLProxy(
       createDeepLProxyRequestInit({
-        sourceText,
+        sourceText: tagged.text,
+        tags: tagged.tags,
         targetLanguage,
         apiKey: trimmedApiKey,
       }),
@@ -114,7 +117,7 @@ export const deeplProvider = {
 
     return {
       sourceText,
-      translatedText: getDeepLTranslatedText(responseData),
+      ...parseTaggedTranslation(getDeepLTranslatedText(responseData), tagged.chunks),
       targetLanguage,
       provider: DEEPL_PROVIDER,
     };

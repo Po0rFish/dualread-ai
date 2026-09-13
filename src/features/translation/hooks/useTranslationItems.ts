@@ -4,7 +4,7 @@ import { cacheRepo } from '../repositories/cacheRepo';
 import type { TranslationLanguage } from '../types/cache';
 import type { TranslationSourceSegment } from '../types/segment';
 import type { TranslationProvider } from '../types/service';
-import type { TranslationItem } from '../types/translation';
+import type { TranslationItem, TranslationPart } from '../types/translation';
 
 interface CacheableTranslationItem extends TranslationItem {
   readonly documentId: string;
@@ -23,6 +23,7 @@ interface UseTranslationItemsResult {
   readonly updateTranslationItem: (
     itemId: string,
     translatedText: string,
+    byParts?: readonly TranslationPart[],
   ) => Promise<void>;
   readonly markTranslationItemError: (
     itemId: string,
@@ -123,7 +124,7 @@ export const useTranslationItems = ({
   );
 
   const updateTranslationItem = useCallback(
-    async (itemId: string, translatedText: string): Promise<void> => {
+    async (itemId: string, translatedText: string, byParts?: readonly TranslationPart[]): Promise<void> => {
       const itemToCache =
         translationItems.find((item) => {
           return item.id === itemId;
@@ -138,6 +139,7 @@ export const useTranslationItems = ({
           return {
             ...item,
             translatedText,
+            byParts,
             translationStatus: 'translated',
             translationError: null,
             provider,
