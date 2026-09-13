@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ClassifiedPdfTextSegment } from '../../../shared/types/reader';
-import TranslationPopover from '../../translation/components/TranslationPopover';
+import TranslationPanel from '../../translation/components/TranslationPanel';
 import TranslationSettingsDrawer from '../../translation/components/TranslationSettingsDrawer';
 import { useTranslationItems } from '../../translation/hooks/useTranslationItems';
 import { usePdfNav } from '../hooks/usePdfNav';
@@ -164,21 +164,24 @@ export default function PdfDocumentReader({
             selectedSegmentId={selectedSegment?.id ?? null}
             selectedText={translationSegment?.text ?? null}
             onSelectSegment={setSelectedSegment}
-            translationPopover={
-              selectedSegment ? (
-                <TranslationPopover
-                  item={activeTranslationItem}
-                  onUpdateItem={updateTranslationItem}
-                  onMarkItemError={markTranslationItemError}
-                  onOpenSettings={openSettings}
-                  onClose={() => {
-                    setSelectedSegment(null);
-                  }}
-                />
-              ) : null
-            }
           />
         </div>
+          <div
+            className="pdf-document-reader__translation-panel"
+            data-open={Boolean(selectedSegment)}
+            inert={!selectedSegment}
+            aria-hidden={!selectedSegment}
+          >
+            <TranslationPanel
+              item={activeTranslationItem}
+              onUpdateItem={updateTranslationItem}
+              onMarkItemError={markTranslationItemError}
+              onOpenSettings={openSettings}
+              onClose={() => {
+                setSelectedSegment(null);
+              }}
+            />
+          </div>
         {areSettingsOpen && (
           <div id="translation-settings-drawer">
             <TranslationSettingsDrawer

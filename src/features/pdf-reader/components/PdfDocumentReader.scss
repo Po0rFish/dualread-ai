@@ -113,6 +113,28 @@
   background: #283448;
 }
 
+.pdf-document-reader__translation-panel {
+  position: sticky;
+  top: 130px;
+  align-self: flex-start;
+  flex: 0 0 360px;
+  min-width: 0;
+  height: max(180px, calc(100dvh - 142px));
+  padding: 12px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 180ms ease, visibility 180ms;
+}
+
+.pdf-document-reader__translation-panel[data-open='true'] {
+  opacity: 1;
+  visibility: visible;
+}
+
+.pdf-document-reader__translation-panel .translation-popover {
+  max-height: 100%;
+}
+
 .pdf-page-canvas {
   margin: 0 auto;
   background: #f8f5ed;
@@ -121,8 +143,19 @@
 
 .pdf-page-canvas__canvas { max-width: none; }
 
-@media (max-width: 960px) {
+@media (max-width: 1200px) {
+  .pdf-document-reader__content { flex-direction: column; }
   .pdf-document-reader__pages { max-height: 70vh; }
+  .pdf-document-reader__translation-panel {
+    position: static;
+    align-self: stretch;
+    flex: 0 0 auto;
+    height: min(384px, 50dvh);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pdf-document-reader__translation-panel { transition: none; }
 }
 
 @media (max-width: 620px) {
