@@ -158,6 +158,7 @@ export const useTranslationItems = ({
         targetLanguage: itemToCache.targetLanguage,
         provider,
         translatedText,
+        byParts,
       });
     },
     [provider, translationItems],

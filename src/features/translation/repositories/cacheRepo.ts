@@ -32,6 +32,7 @@ export const cacheRepo = {
     targetLanguage,
     provider,
     translatedText,
+    byParts,
   }: SaveTranslationParams): Promise<TranslationCacheItem> {
     const database = await getTranslationsDatabase();
 
@@ -53,6 +54,7 @@ export const cacheRepo = {
       targetLanguage,
       provider,
       translatedText,
+      byParts,
       createdAt: existingItem?.createdAt ?? now,
       updatedAt: now,
     };

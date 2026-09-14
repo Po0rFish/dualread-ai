@@ -1,4 +1,5 @@
 import type { TranslationProvider } from './service';
+import type { TranslationPart } from './translation';
 
 export type TranslationLanguage = 'english';
 
@@ -13,6 +14,7 @@ export interface TranslationCacheItem extends TranslationCacheKeyParams {
   readonly id: string;
   readonly sourceText: string;
   readonly translatedText: string;
+  readonly byParts?: readonly TranslationPart[];
   readonly createdAt: string;
   readonly updatedAt: string;
 }
@@ -21,6 +23,7 @@ export interface SaveTranslationParams
   extends TranslationCacheKeyParams {
   readonly sourceText: string;
   readonly translatedText: string;
+  readonly byParts?: readonly TranslationPart[];
 }
 
 export type GetTranslationParams = TranslationCacheKeyParams;

@@ -59,6 +59,7 @@ export const createTranslationItem = ({
     sourceText: segment.text,
     sourceType: getSourceType(segment),
     translatedText: cachedTranslation?.translatedText ?? null,
+    byParts: cachedTranslation?.byParts,
     translationStatus: cachedTranslation ? 'cached' : 'idle',
     translationError: null,
     targetLanguage,

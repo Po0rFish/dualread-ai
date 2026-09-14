@@ -1,4 +1,6 @@
 import type { PdfSentencePart } from '../../types/documentText';
+import { analyzeText } from '../../../text-analysis';
+import { isSentenceContinuation } from '../../../text-analysis/lib/mergeEllipsisContinuations';
 
 const SENTENCE_END_REGEXP = /[.!?…][»“”")\]]*$/;
 const SENTENCE_FRAGMENT_REGEXP =
@@ -22,7 +24,9 @@ const splitTextIntoFragments = (text: string): string[] => {
     return [];
   }
 
-  const fragments = normalizedText.match(SENTENCE_FRAGMENT_REGEXP);
+  const fragments = typeof Intl.Segmenter === 'function'
+    ? analyzeText(normalizedText, 'de').sentences.map((sentence) => sentence.text)
+    : normalizedText.match(SENTENCE_FRAGMENT_REGEXP);
 
   if (!fragments) {
     return [normalizedText];
@@ -124,6 +128,17 @@ export const splitTextIntoSentenceParts = (
     const fragments = splitTextIntoFragments(part.text);
 
     fragments.forEach((fragment) => {
+      const previousSentence = sentenceParts.at(-1);
+      const previousPart = previousSentence?.at(-1);
+      if (
+        currentSentenceParts.length === 0 && previousSentence && previousPart &&
+        canContinueSentence(previousPart, part) &&
+        isSentenceContinuation(previousPart.text, fragment)
+      ) {
+        sentenceParts.pop();
+        currentSentenceParts = previousSentence;
+      }
+
       const nextPart: PdfSentencePart = {
         ...part,
         text: fragment,
