@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { ClassifiedPdfTextSegment } from '../../../shared/types/reader';
-import { buildTextAnalysis, type TextParagraph } from '../../text-analysis';
+import { buildTextAnalysis, getWordContextByWordId, type TextWordContext } from '../../text-analysis';
 
 interface TextInspectorProps {
   readonly pageNumber: number;
@@ -8,13 +8,7 @@ interface TextInspectorProps {
 }
 
 function InspectorContent({ pageNumber, segments }: TextInspectorProps) {
-  const [selection, setSelection] = useState<{
-    paragraph: TextParagraph;
-    sentence: string;
-    word: string;
-    offset: number;
-    endIndex: number;
-  } | null>(null);
+  const [selection, setSelection] = useState<TextWordContext | null>(null);
   const entries = useMemo(() => {
     if (typeof Intl.Segmenter !== 'function') return null;
     return buildTextAnalysis(segments.flatMap((segment) => segment.lines));
@@ -41,11 +35,13 @@ function InspectorContent({ pageNumber, segments }: TextInspectorProps) {
       <p>Selected word context</p>
       {selected ? (
         <dl>
-          <dt>Word</dt><dd>{selected.word}</dd>
+          <dt>Word</dt><dd>{selected.word.text}</dd>
           <dt>Page / paragraph / UTF-16 range in page</dt>
-          <dd>{selected.paragraph.pageNumber} / {selected.paragraph.id} / [{selected.offset}, {selected.endIndex})</dd>
-          <dt>Sentence</dt><dd>{selected.sentence}</dd>
+          <dd>{selected.pageNumber} / {selected.paragraph.id} / [{selected.word.startIndex}, {selected.word.endIndex})</dd>
+          <dt>Sentence</dt><dd>{selected.sentence.text}</dd>
           <dt>Paragraph candidate</dt><dd>{selected.paragraph.text}</dd>
+          <dt>Previous sentence</dt><dd>{selected.previousSentence?.text ?? 'None'}</dd>
+          <dt>Next sentence</dt><dd>{selected.nextSentence?.text ?? 'None'}</dd>
         </dl>
       ) : <p>Select a word below to inspect its context.</p>}
       {!entries && <p>Intl.Segmenter is unavailable in this browser.</p>}
@@ -63,17 +59,13 @@ function InspectorContent({ pageNumber, segments }: TextInspectorProps) {
                 <p>{sentence.text} <small>[{sentence.startIndex}, {sentence.endIndex})</small></p>
                 <p>Words ({sentence.words.length})</p>
                 {sentence.words.map((word) => {
-                  const offset = word.startIndex;
                   return (
                     <button
                       key={word.id}
                       type="button"
                       style={{ margin: 2 }}
-                      aria-pressed={selected?.paragraph === paragraph && selected.offset === offset}
-                      onClick={() => setSelection({
-                        paragraph, sentence: sentence.text, word: word.text, offset,
-                        endIndex: word.endIndex,
-                      })}
+                      aria-pressed={selected?.word === word}
+                      onClick={() => setSelection(getWordContextByWordId(entries, word.id))}
                     >
                       {word.text} <small>[{word.startIndex}, {word.endIndex})</small>
                     </button>

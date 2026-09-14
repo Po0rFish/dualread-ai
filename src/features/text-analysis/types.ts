@@ -40,3 +40,16 @@ export interface TextParagraph extends TextEntity {
 export interface TextAnalysisPage extends TextEntity {
   readonly paragraphs: readonly TextParagraph[];
 }
+
+export interface TextWordContext {
+  readonly word: TextWord;
+  readonly sentence: TextSentence;
+  readonly paragraph: TextParagraph;
+  readonly previousSentence: TextSentence | null;
+  readonly nextSentence: TextSentence | null;
+  readonly pageNumber: number;
+  /** Zero-based index within the paragraph. */
+  readonly sentenceIndex: number;
+  /** Zero-based index within the sentence. */
+  readonly wordIndex: number;
+}
