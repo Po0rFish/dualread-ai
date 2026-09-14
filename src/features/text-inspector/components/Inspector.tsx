@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { ClassifiedPdfTextSegment } from '../../../shared/types/reader';
-import { analyzeText } from '../../text-analysis';
+import { buildTextAnalysis, type TextParagraph } from '../../text-analysis';
 
 interface TextInspectorProps {
   readonly pageNumber: number;
@@ -9,7 +9,7 @@ interface TextInspectorProps {
 
 function InspectorContent({ pageNumber, segments }: TextInspectorProps) {
   const [selection, setSelection] = useState<{
-    segment: ClassifiedPdfTextSegment;
+    paragraph: TextParagraph;
     sentence: string;
     word: string;
     offset: number;
@@ -17,15 +17,13 @@ function InspectorContent({ pageNumber, segments }: TextInspectorProps) {
   } | null>(null);
   const entries = useMemo(() => {
     if (typeof Intl.Segmenter !== 'function') return null;
-    return segments.map((segment) => ({
-      segment,
-      sentences: analyzeText(segment.text, 'de').sentences,
-    }));
+    return buildTextAnalysis(segments.flatMap((segment) => segment.lines));
   }, [segments]);
-  const selected = selection && segments.includes(selection.segment)
-    ? selection
-    : null;
-  const lines = segments.flatMap((segment) => segment.lines);
+  const selected = selection && entries?.some((page) =>
+    page.paragraphs.includes(selection.paragraph),
+  ) ? selection : null;
+  const lines = [...new Map(segments.flatMap((segment) => segment.lines)
+    .map((line) => [`${line.pageNumber}:${line.id}`, line])).values()];
 
   return (
     <div style={{ maxHeight: 480, overflow: 'auto', overflowWrap: 'anywhere' }}>
@@ -33,7 +31,7 @@ function InspectorContent({ pageNumber, segments }: TextInspectorProps) {
       <details>
         <summary>Page text (reading order)</summary>
         <pre style={{ whiteSpace: 'pre-wrap' }}>
-          {segments.map((segment) => segment.text).join('\n\n')}
+          {entries?.map((page) => page.text).join('\n\n')}
         </pre>
       </details>
       <details>
@@ -44,34 +42,36 @@ function InspectorContent({ pageNumber, segments }: TextInspectorProps) {
       {selected ? (
         <dl>
           <dt>Word</dt><dd>{selected.word}</dd>
-          <dt>Page / segment / UTF-16 range in segment</dt>
-          <dd>{selected.segment.pageNumber} / {selected.segment.id} / [{selected.offset}, {selected.endIndex})</dd>
+          <dt>Page / paragraph / UTF-16 range in page</dt>
+          <dd>{selected.paragraph.pageNumber} / {selected.paragraph.id} / [{selected.offset}, {selected.endIndex})</dd>
           <dt>Sentence</dt><dd>{selected.sentence}</dd>
-          <dt>Reading segment / paragraph</dt><dd>{selected.segment.text}</dd>
+          <dt>Paragraph candidate</dt><dd>{selected.paragraph.text}</dd>
         </dl>
       ) : <p>Select a word below to inspect its context.</p>}
       {!entries && <p>Intl.Segmenter is unavailable in this browser.</p>}
       {segments.length === 0 && <p>No extracted text available for this page.</p>}
-      <p>Offsets: UTF-16 within each reading segment, end exclusive.</p>
-      {entries?.map(({ segment, sentences }) => (
-        <details key={segment.id}>
-          <summary>Segment {segment.id} · {segment.type} · {sentences.length} sentences</summary>
-          <p>{segment.text}</p>
+      <p>Paragraphs are layout-based candidates. Offsets: UTF-16 within reconstructed page text, end exclusive.</p>
+      {entries?.map((page) => (<details key={page.id} open>
+        <summary>Page {page.pageNumber} · {page.paragraphs.length} paragraphs</summary>
+        {page.paragraphs.map((paragraph) => (
+        <details key={paragraph.id}>
+          <summary>Paragraph {paragraph.id} · {paragraph.sentences.length} sentences</summary>
+          <p>{paragraph.text}</p>
           <ol>
-            {sentences.map((sentence) => (
-              <li key={sentence.startIndex}>
+            {paragraph.sentences.map((sentence) => (
+              <li key={sentence.id}>
                 <p>{sentence.text} <small>[{sentence.startIndex}, {sentence.endIndex})</small></p>
                 <p>Words ({sentence.words.length})</p>
                 {sentence.words.map((word) => {
                   const offset = word.startIndex;
                   return (
                     <button
-                      key={word.startIndex}
+                      key={word.id}
                       type="button"
                       style={{ margin: 2 }}
-                      aria-pressed={selected?.segment === segment && selected.offset === offset}
+                      aria-pressed={selected?.paragraph === paragraph && selected.offset === offset}
                       onClick={() => setSelection({
-                        segment, sentence: sentence.text, word: word.text, offset,
+                        paragraph, sentence: sentence.text, word: word.text, offset,
                         endIndex: word.endIndex,
                       })}
                     >
@@ -83,6 +83,7 @@ function InspectorContent({ pageNumber, segments }: TextInspectorProps) {
             ))}
           </ol>
         </details>
+        ))}</details>
       ))}
     </div>
   );

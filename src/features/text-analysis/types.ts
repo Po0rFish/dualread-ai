@@ -14,3 +14,29 @@ export interface AnalyzedSentence extends TextSpan {
 export interface TextAnalysis {
   readonly sentences: readonly AnalyzedSentence[];
 }
+
+/** UTF-16 offsets into reconstructed page text; endIndex is exclusive. */
+interface TextEntity extends TextSpan {
+  readonly id: string;
+  readonly pageNumber: number;
+}
+
+export interface TextWord extends TextEntity {
+  readonly paragraphId: string;
+  readonly sentenceId: string;
+}
+
+export interface TextSentence extends TextEntity {
+  readonly paragraphId: string;
+  readonly words: readonly TextWord[];
+}
+
+/** A layout-based paragraph candidate, not a guaranteed semantic paragraph. */
+export interface TextParagraph extends TextEntity {
+  readonly lineIds: readonly string[];
+  readonly sentences: readonly TextSentence[];
+}
+
+export interface TextAnalysisPage extends TextEntity {
+  readonly paragraphs: readonly TextParagraph[];
+}
