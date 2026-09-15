@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { RenderTask } from 'pdfjs-dist';
-import type { ClassifiedPdfTextSegment } from '../../../shared/types/reader';
+import type { ClassifiedPdfTextSegment, PdfTextWord } from '../../../shared/types/reader';
 import { buildReadingSegments } from '../lib/buildReadingSegments';
 import { buildTextLines } from '../lib/buildTextLines';
 import { classifyTextSegments } from '../lib/classifyTextSegments';
@@ -8,13 +8,15 @@ import { extractPdfText } from '../lib/extractPdfText';
 import { pdfjsLib } from '../lib/pdfjsClient';
 import SegmentOverlay from './SegmentOverlay';
 import TextInspector from '../../text-inspector';
+import { buildTextAnalysis } from '../../text-analysis';
+import { resolveAnalysisSentence, type PdfTextSelection } from '../lib/resolveAnalysisSentence';
 
 interface PdfPageCanvasProps {
   readonly file: File;
   readonly pageNumber: number;
   readonly selectedSegmentId: string | null;
   readonly selectedText: string | null;
-  readonly onSelectSegment: (segment: ClassifiedPdfTextSegment) => void;
+  readonly onSelectSegment: (selection: PdfTextSelection) => void;
 }
 
 interface CanvasSize {
@@ -150,10 +152,19 @@ export default function PdfPageCanvas({
     };
   }, [file, pageNumber]);
 
+  const analysis = useMemo(() => {
+    if (typeof Intl.Segmenter !== 'function') return [];
+    return buildTextAnalysis(classifiedSegments.flatMap((segment) => segment.lines));
+  }, [classifiedSegments]);
+
   const handleSelectSegment = (
     segment: ClassifiedPdfTextSegment,
+    word: PdfTextWord,
   ): void => {
-    onSelectSegment(segment);
+    onSelectSegment({
+      segment,
+      sentence: resolveAnalysisSentence(analysis, classifiedSegments, segment, word),
+    });
   };
 
   return (

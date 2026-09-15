@@ -11,7 +11,7 @@ interface SegmentOverlayProps {
   readonly selectedSegmentId: string | null;
   readonly selectedText: string | null;
   readonly renderScale: number;
-  readonly onSelectSegment: (segment: ClassifiedPdfTextSegment) => void;
+  readonly onSelectSegment: (segment: ClassifiedPdfTextSegment, word: PdfTextWord) => void;
 }
 
 const getRectStyle = (
@@ -118,7 +118,7 @@ export default function SegmentOverlay({
               title={wordRect.text}
               aria-label={`Select sentence containing ${wordRect.text}`}
               onClick={() => {
-                onSelectSegment(segment);
+                onSelectSegment(segment, wordRect);
               }}
               style={getRectStyle(wordRect, renderScale)}
             />

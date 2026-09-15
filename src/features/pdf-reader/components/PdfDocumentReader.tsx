@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { ClassifiedPdfTextSegment } from '../../../shared/types/reader';
+import type { PdfTextSelection } from '../lib/resolveAnalysisSentence';
 import TranslationPanel from '../../translation/components/TranslationPanel';
 import TranslationSettingsDrawer from '../../translation/components/TranslationSettingsDrawer';
 import { useTranslationItems } from '../../translation/hooks/useTranslationItems';
@@ -19,7 +19,7 @@ export default function PdfDocumentReader({
   documentId,
 }: PdfDocumentReaderProps) {
   const [selectedSegment, setSelectedSegment] =
-    useState<ClassifiedPdfTextSegment | null>(null);
+    useState<PdfTextSelection | null>(null);
   const [areSettingsOpen, setAreSettingsOpen] = useState(false);
   const [shouldFocusApiKey, setShouldFocusApiKey] = useState(false);
   const addedTranslationKeyRef = useRef<string | null>(null);
@@ -60,7 +60,7 @@ export default function PdfDocumentReader({
   } = useTextSelection({
     documentId,
     file,
-    selectedSegment,
+    selection: selectedSegment,
   });
 
   useEffect(() => {
@@ -161,16 +161,16 @@ export default function PdfDocumentReader({
           <PdfPageCanvas
             file={file}
             pageNumber={currentPageNumber}
-            selectedSegmentId={selectedSegment?.id ?? null}
+            selectedSegmentId={selectedSegment?.segment.id ?? null}
             selectedText={translationSegment?.text ?? null}
             onSelectSegment={setSelectedSegment}
           />
         </div>
           <div
             className="pdf-document-reader__translation-panel"
-            data-open={Boolean(selectedSegment)}
-            inert={!selectedSegment}
-            aria-hidden={!selectedSegment}
+            data-open={Boolean(translationSegment)}
+            inert={!translationSegment}
+            aria-hidden={!translationSegment}
           >
             <TranslationPanel
               item={activeTranslationItem}
