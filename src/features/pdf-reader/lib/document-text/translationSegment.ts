@@ -11,12 +11,8 @@ export const createTranslationSegment = ({
   selectedSegment,
   selectedSentence,
 }: CreateTranslationSegmentParams): TranslationSourceSegment | null => {
-  if (!selectedSegment) {
+  if (!selectedSegment || !selectedSentence?.text.trim()) {
     return null;
-  }
-
-  if (!selectedSentence) {
-    return selectedSegment;
   }
 
   return {

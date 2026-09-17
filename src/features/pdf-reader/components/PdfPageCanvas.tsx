@@ -161,9 +161,11 @@ export default function PdfPageCanvas({
     segment: ClassifiedPdfTextSegment,
     word: PdfTextWord,
   ): void => {
+    const sentence = resolveAnalysisSentence(analysis, classifiedSegments, segment, word);
+    if (!sentence) return;
     onSelectSegment({
       segment,
-      sentence: resolveAnalysisSentence(analysis, classifiedSegments, segment, word),
+      sentence,
     });
   };
 

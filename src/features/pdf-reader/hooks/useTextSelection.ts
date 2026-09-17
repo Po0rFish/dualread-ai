@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import type { PdfTextSelection } from '../lib/resolveAnalysisSentence';
 import { createSourceTextHash } from '../lib/document-text/createSourceTextHash';
 import type { TranslationSourceSegment } from '../../translation/types/segment';
-import { findSentence } from '../lib/document-text/findSentence';
 import { createTranslationSegment } from '../lib/document-text/translationSegment';
 import {
   getTextModelStatus,
@@ -44,7 +43,7 @@ export const useTextSelection = ({
   } | null>(null);
 
   useEffect(() => {
-    if (!selection?.sentence) return;
+    if (!selection?.sentence?.text.trim()) return;
     let cancelled = false;
     const sentence = selection.sentence;
     void createSourceTextHash(sentence.text).then((sourceTextHash) => {
@@ -61,19 +60,9 @@ export const useTextSelection = ({
     return () => { cancelled = true; };
   }, [selection, file, documentId]);
 
-  const legacySentence = findSentence({
-    textModel: textModel?.documentId === documentId ? textModel : null,
-    segmentId: selectedSegment?.id ?? null,
-    segmentText: selectedSegment?.text,
-    pageNumber: selectedSegment?.pageNumber,
-  });
-
   const currentResolution = resolved?.selection === selection &&
     resolved?.file === file && resolved?.documentId === documentId ? resolved : null;
-  // Do not enqueue a legacy item while the preferred sentence hash is pending.
-  const selectedSentence = selection?.sentence
-    ? (currentResolution ? currentResolution.sentence ?? legacySentence : null)
-    : legacySentence;
+  const selectedSentence = currentResolution?.sentence ?? null;
   const translationSegment = selectedSentence?.text.trim()
     ? createTranslationSegment({ selectedSegment, selectedSentence })
     : null;

@@ -1,10 +1,29 @@
 import { useMemo, useState } from 'react';
 import type { ClassifiedPdfTextSegment } from '../../../shared/types/reader';
-import { buildTextAnalysis, getWordContextByWordId, type TextWordContext } from '../../text-analysis';
+import { buildTextAnalysis, getWordContextByWordId, type TextWord, type TextWordContext } from '../../text-analysis';
 
 interface TextInspectorProps {
   readonly pageNumber: number;
   readonly segments: ClassifiedPdfTextSegment[];
+}
+
+interface InspectorWordProps {
+  readonly word: TextWord;
+  readonly selected: boolean;
+  readonly onSelect: (wordId: string) => void;
+}
+
+function InspectorWord({ word, selected, onSelect }: InspectorWordProps) {
+  return (
+    <button
+      type="button"
+      style={{ margin: 2 }}
+      aria-pressed={selected}
+      onClick={() => onSelect(word.id)}
+    >
+      {word.text} <small>[{word.startIndex}, {word.endIndex})</small>
+    </button>
+  );
 }
 
 function InspectorContent({ pageNumber, segments }: TextInspectorProps) {
@@ -13,6 +32,9 @@ function InspectorContent({ pageNumber, segments }: TextInspectorProps) {
     if (typeof Intl.Segmenter !== 'function') return null;
     return buildTextAnalysis(segments.flatMap((segment) => segment.lines));
   }, [segments]);
+  const handleSelectWord = (wordId: string): void => {
+    setSelection(entries ? getWordContextByWordId(entries, wordId) : null);
+  };
   const selected = selection && entries?.some((page) =>
     page.paragraphs.includes(selection.paragraph),
   ) ? selection : null;
@@ -58,19 +80,14 @@ function InspectorContent({ pageNumber, segments }: TextInspectorProps) {
               <li key={sentence.id}>
                 <p>{sentence.text} <small>[{sentence.startIndex}, {sentence.endIndex})</small></p>
                 <p>Words ({sentence.words.length})</p>
-                {sentence.words.map((word) => {
-                  return (
-                    <button
-                      key={word.id}
-                      type="button"
-                      style={{ margin: 2 }}
-                      aria-pressed={selected?.word === word}
-                      onClick={() => setSelection(getWordContextByWordId(entries, word.id))}
-                    >
-                      {word.text} <small>[{word.startIndex}, {word.endIndex})</small>
-                    </button>
-                  );
-                })}
+                {sentence.words.map((word) => (
+                  <InspectorWord
+                    key={word.id}
+                    word={word}
+                    selected={selected?.word === word}
+                    onSelect={handleSelectWord}
+                  />
+                ))}
               </li>
             ))}
           </ol>
