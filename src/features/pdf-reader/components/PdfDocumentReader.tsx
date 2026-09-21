@@ -20,7 +20,7 @@ export default function PdfDocumentReader({
 }: PdfDocumentReaderProps) {
   const [selectedSegment, setSelectedSegment] =
     useState<PdfTextSelection | null>(null);
-  const [areSettingsOpen, setAreSettingsOpen] = useState(false);
+  const [activeRightPanel, setActiveRightPanel] = useState<'translation' | 'settings' | null>(null);
   const [shouldFocusApiKey, setShouldFocusApiKey] = useState(false);
   const addedTranslationKeyRef = useRef<string | null>(null);
   const settingsButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -28,6 +28,7 @@ export default function PdfDocumentReader({
 
   const handlePageChange = useCallback((): void => {
     setSelectedSegment(null);
+    setActiveRightPanel((panel) => panel === 'translation' ? null : panel);
   }, []);
 
   const {
@@ -101,20 +102,20 @@ export default function PdfDocumentReader({
         ? document.activeElement
         : settingsButtonRef.current;
     setShouldFocusApiKey(focusApiKey);
-    setAreSettingsOpen(true);
+    setActiveRightPanel('settings');
   }, []);
 
-  const closeSettings = useCallback((): void => {
-    setAreSettingsOpen(false);
+  const closePanel = useCallback((): void => {
+    setActiveRightPanel(null);
     setShouldFocusApiKey(false);
     window.requestAnimationFrame(() => {
       const trigger = settingsTriggerRef.current;
       settingsTriggerRef.current = null;
 
       if (trigger?.isConnected) {
-        trigger.focus();
+        trigger.focus({ preventScroll: true });
       } else {
-        settingsButtonRef.current?.focus();
+        settingsButtonRef.current?.focus({ preventScroll: true });
       }
     });
   }, []);
@@ -142,15 +143,9 @@ export default function PdfDocumentReader({
           ref={settingsButtonRef}
           type="button"
           className="pdf-document-reader__settings-button"
-          aria-expanded={areSettingsOpen}
+          aria-expanded={activeRightPanel === 'settings'}
           aria-controls="translation-settings-drawer"
-          onClick={() => {
-            if (areSettingsOpen) {
-              closeSettings();
-            } else {
-              openSettings();
-            }
-          }}
+          onClick={() => openSettings()}
         >
           Settings
         </button>
@@ -162,33 +157,39 @@ export default function PdfDocumentReader({
             file={file}
             pageNumber={currentPageNumber}
             selectedSentence={selectedSegment?.sentence ?? null}
-            onSelectSegment={setSelectedSegment}
+            onSelectSegment={(selection) => {
+              setSelectedSegment(selection);
+              setShouldFocusApiKey(false);
+              setActiveRightPanel('translation');
+            }}
           />
         </div>
-          <div
-            className="pdf-document-reader__translation-panel"
-            data-open={Boolean(translationSegment)}
-            inert={!translationSegment}
-            aria-hidden={!translationSegment}
-          >
-            <TranslationPanel
-              item={activeTranslationItem}
-              onUpdateItem={updateTranslationItem}
-              onMarkItemError={markTranslationItemError}
-              onOpenSettings={openSettings}
-              onClose={() => {
-                setSelectedSegment(null);
-              }}
-            />
-          </div>
-        {areSettingsOpen && (
-          <div id="translation-settings-drawer">
-            <TranslationSettingsDrawer
-              autoFocusApiKey={shouldFocusApiKey}
-              onClose={closeSettings}
-            />
-          </div>
-        )}
+        <div
+          className="pdf-document-reader__translation-panel"
+          data-open={activeRightPanel !== null}
+          inert={activeRightPanel === null}
+          aria-hidden={activeRightPanel === null}
+        >
+          {activeRightPanel === 'translation' && (
+            <div className="pdf-document-reader__panel-view">
+              <TranslationPanel
+                item={activeTranslationItem}
+                onUpdateItem={updateTranslationItem}
+                onMarkItemError={markTranslationItemError}
+                onOpenSettings={openSettings}
+                onClose={closePanel}
+              />
+            </div>
+          )}
+          {activeRightPanel === 'settings' && (
+            <div id="translation-settings-drawer" className="pdf-document-reader__panel-view">
+              <TranslationSettingsDrawer
+                autoFocusApiKey={shouldFocusApiKey}
+                onClose={closePanel}
+              />
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );
