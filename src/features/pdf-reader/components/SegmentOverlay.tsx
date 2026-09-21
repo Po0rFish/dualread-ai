@@ -1,4 +1,6 @@
-import type { CSSProperties } from 'react';
+import { useMemo, type CSSProperties } from 'react';
+import type { TextAnalysisPage, TextSentence } from '../../text-analysis';
+import { resolveAnalysisSentence } from '../lib/resolveAnalysisSentence';
 import type {
   ClassifiedPdfTextSegment,
   PdfTextRect,
@@ -8,8 +10,8 @@ import './SegmentOverlay.scss';
 
 interface SegmentOverlayProps {
   readonly segments: ClassifiedPdfTextSegment[];
-  readonly selectedSegmentId: string | null;
-  readonly selectedText: string | null;
+  readonly analysis: readonly TextAnalysisPage[];
+  readonly selectedSentence: TextSentence | null;
   readonly renderScale: number;
   readonly onSelectSegment: (segment: ClassifiedPdfTextSegment, word: PdfTextWord) => void;
 }
@@ -24,55 +26,6 @@ const getRectStyle = (
     width: rect.width * renderScale,
     height: rect.height * renderScale,
   };
-};
-
-const WORD_REGEXP = /\S+/g;
-
-const normalizeWord = (word: string): string => {
-  return word
-    .toLocaleLowerCase()
-    .replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '');
-};
-
-const getSelectedWordIndexes = (
-  wordRects: PdfTextWord[],
-  selectedText: string | null,
-): Set<number> => {
-  if (!selectedText) {
-    return new Set();
-  }
-
-  const segmentWords = wordRects.map((wordRect) => {
-    return normalizeWord(wordRect.text);
-  });
-  const selectedWords = selectedText
-    .match(WORD_REGEXP)
-    ?.map(normalizeWord)
-    .filter(Boolean) ?? [];
-
-  if (selectedWords.length === 0) {
-    return new Set();
-  }
-
-  for (
-    let startIndex = 0;
-    startIndex <= segmentWords.length - selectedWords.length;
-    startIndex += 1
-  ) {
-    const isMatch = selectedWords.every((word, selectedWordIndex) => {
-      return segmentWords[startIndex + selectedWordIndex] === word;
-    });
-
-    if (isMatch) {
-      return new Set(
-        selectedWords.map((_, selectedWordIndex) => {
-          return startIndex + selectedWordIndex;
-        }),
-      );
-    }
-  }
-
-  return new Set();
 };
 
 const getRectClassName = (
@@ -93,22 +46,25 @@ const getRectClassName = (
 
 export default function SegmentOverlay({
   segments,
-  selectedSegmentId,
-  selectedText,
+  analysis,
+  selectedSentence,
   renderScale,
   onSelectSegment,
 }: SegmentOverlayProps) {
+  // Use the same mapping as clicks, including punctuation and cross-segment sentences.
+  const wordSentences = useMemo(() => new Map(segments.map((segment) => [
+    segment,
+    segment.words.map((word) => resolveAnalysisSentence(analysis, segments, segment, word)),
+  ])), [analysis, segments]);
+
   return (
     <div className="segment-overlay">
       {segments.map((segment) => {
-        const isSelectedSegment = selectedSegmentId === segment.id;
-        const wordRects = segment.words;
-        const selectedWordIndexes = isSelectedSegment
-          ? getSelectedWordIndexes(wordRects, selectedText)
-          : new Set<number>();
-
-        return wordRects.map((wordRect, wordIndex) => {
-          const isSelected = selectedWordIndexes.has(wordIndex);
+        return segment.words.map((wordRect, wordIndex) => {
+          const sentence = wordSentences.get(segment)?.[wordIndex];
+          const isSelected = Boolean(selectedSentence && sentence &&
+            sentence.id === selectedSentence.id &&
+            sentence.pageNumber === selectedSentence.pageNumber);
 
           return (
             <button

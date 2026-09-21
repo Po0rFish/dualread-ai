@@ -1,8 +1,14 @@
-import { splitSourceChunks } from '../../../text-analysis/lib/splitSourceChunks';
+import { splitSourceChunks } from '../../../text-analysis';
 import type { TranslationPart } from '../../types/translation';
 
-const escapeXml = (text: string): string => text
-  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const xmlEscapes = new Map([
+  ['&', '&amp;'],
+  ['<', '&lt;'],
+  ['>', '&gt;'],
+]);
+
+const escapeXml = (text: string): string =>
+  text.replaceAll(/[&<>]/g, (char) => xmlEscapes.get(char) ?? char);
 
 export function createTaggedTranslation(sourceText: string) {
   const chunks = splitSourceChunks(sourceText);
@@ -21,8 +27,8 @@ export function createTaggedTranslation(sourceText: string) {
 }
 
 // Text-only recovery for malformed XML; never infer phrase mappings here.
-const recoverText = (xml: string): string => xml.replace(/<[^>]*>/g, '')
-  .replace(/&(#x[\da-f]+|#\d+|amp|lt|gt|quot|apos);/gi, (entity, code: string) => {
+const recoverText = (xml: string): string => xml.replaceAll(/<[^>]*>/g, '')
+  .replaceAll(/&(#x[\da-f]+|#\d+|amp|lt|gt|quot|apos);/gi, (entity, code: string) => {
     const named: Record<string, string> = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'" };
     if (code[0] !== '#') return named[code] ?? entity;
     const point = code[1].toLowerCase() === 'x'

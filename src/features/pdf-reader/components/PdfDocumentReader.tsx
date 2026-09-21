@@ -161,8 +161,7 @@ export default function PdfDocumentReader({
           <PdfPageCanvas
             file={file}
             pageNumber={currentPageNumber}
-            selectedSegmentId={selectedSegment?.segment.id ?? null}
-            selectedText={translationSegment?.text ?? null}
+            selectedSentence={selectedSegment?.sentence ?? null}
             onSelectSegment={setSelectedSegment}
           />
         </div>

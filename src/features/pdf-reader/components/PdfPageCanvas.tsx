@@ -8,14 +8,13 @@ import { extractPdfText } from '../lib/extractPdfText';
 import { pdfjsLib } from '../lib/pdfjsClient';
 import SegmentOverlay from './SegmentOverlay';
 import TextInspector from '../../text-inspector';
-import { buildTextAnalysis } from '../../text-analysis';
+import { buildTextAnalysis, type TextSentence } from '../../text-analysis';
 import { resolveAnalysisSentence, type PdfTextSelection } from '../lib/resolveAnalysisSentence';
 
 interface PdfPageCanvasProps {
   readonly file: File;
   readonly pageNumber: number;
-  readonly selectedSegmentId: string | null;
-  readonly selectedText: string | null;
+  readonly selectedSentence: TextSentence | null;
   readonly onSelectSegment: (selection: PdfTextSelection) => void;
 }
 
@@ -29,8 +28,7 @@ const RENDER_SCALE = 1.5;
 export default function PdfPageCanvas({
   file,
   pageNumber,
-  selectedSegmentId,
-  selectedText,
+  selectedSentence,
   onSelectSegment,
 }: PdfPageCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -189,8 +187,8 @@ export default function PdfPageCanvas({
 
       <SegmentOverlay
         segments={classifiedSegments}
-        selectedSegmentId={selectedSegmentId}
-        selectedText={selectedText}
+        analysis={analysis}
+        selectedSentence={selectedSentence}
         renderScale={RENDER_SCALE}
         onSelectSegment={handleSelectSegment}
       />

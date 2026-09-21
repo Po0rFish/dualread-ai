@@ -1,6 +1,5 @@
 import type { PdfSentencePart } from '../../types/documentText';
-import { analyzeText } from '../../../text-analysis';
-import { isSentenceContinuation } from '../../../text-analysis/lib/mergeEllipsisContinuations';
+import { analyzeText, isSentenceContinuation } from '../../../text-analysis';
 
 const SENTENCE_END_REGEXP = /[.!?…][»“”")\]]*$/;
 const SENTENCE_FRAGMENT_REGEXP =
