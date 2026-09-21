@@ -1,7 +1,11 @@
 # AI analyzer proxy contract
 
-Status: reserved contract only. No endpoint, fetch call, real provider, or API key
-is implemented. The analyzer service continues to use the local mock provider.
+Status: frontend proxy provider available; no backend endpoint, real AI provider,
+or API key is implemented. The async analyzer service defaults to the local mock.
+Only explicit `provider: 'proxy'` calls POST to the internal endpoint. The Inspector
+does not select proxy. Requests use same-origin mode and reject redirects.
+The provider validates response shape and selectedText, and reports safe errors for
+network failures, HTTP failures, and malformed responses without exposing server bodies.
 
 ## Future endpoint
 

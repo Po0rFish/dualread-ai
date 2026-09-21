@@ -1,4 +1,4 @@
-export type AiAnalyzerProvider = 'mock';
+export type AiAnalyzerProvider = 'mock' | 'proxy';
 
 export interface AiAnalyzerErrorResponse {
   readonly error: {
