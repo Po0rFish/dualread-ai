@@ -1,4 +1,4 @@
-import type { AiAnalyzerRequest, AiAnalyzerResponse } from '../types';
+import type { AiAnalyzerRequest, AiAnalyzerResponse } from '../../types';
 
 /** Fixed diagnostic fixtures, not AI-generated explanations. No network calls. */
 export function analyzeWithMock(request: AiAnalyzerRequest): AiAnalyzerResponse {

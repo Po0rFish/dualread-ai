@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { analyzeWithMock, createAiAnalyzerRequestFromWordContext, type AiAnalyzerResponse } from '../../ai-analyzer';
+import { analyzeTextWithAiAnalyzer, createAiAnalyzerRequestFromWordContext, type AiAnalyzerResponse } from '../../ai-analyzer';
 import type { TextWordContext } from '../../text-analysis';
 
 export default function AnalyzerPreview({ context }: { readonly context: TextWordContext | null }) {
@@ -7,7 +7,7 @@ export default function AnalyzerPreview({ context }: { readonly context: TextWor
     readonly word: TextWordContext['word'];
     readonly response: AiAnalyzerResponse;
   } | null>(null);
-  const response = context && result?.word === context.word ? result.response : null;
+  const response = result?.word === context?.word ? result?.response ?? null : null;
 
   return (
     <section aria-label="AI analyzer preview (mock)">
@@ -16,7 +16,7 @@ export default function AnalyzerPreview({ context }: { readonly context: TextWor
       {context ? (
         <button type="button" onClick={() => setResult({
           word: context.word,
-          response: analyzeWithMock(createAiAnalyzerRequestFromWordContext(context)),
+          response: analyzeTextWithAiAnalyzer({ request: createAiAnalyzerRequestFromWordContext(context) }),
         })}>Analyze word</button>
       ) : <p>Select a word to analyze it.</p>}
       <div aria-live="polite">

@@ -1,3 +1,10 @@
+export type AiAnalyzerProvider = 'mock';
+
+export interface AiAnalyzerProviderAnalyzeParams {
+  readonly request: AiAnalyzerRequest;
+  readonly provider?: AiAnalyzerProvider;
+}
+
 /** Context for a future German-learning analyzer; no provider-specific fields. */
 export interface AiAnalyzerRequest {
   readonly sourceLanguage: 'de';

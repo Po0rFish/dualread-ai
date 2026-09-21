@@ -1,3 +1,3 @@
-export type { AiAnalyzerRequest, AiAnalyzerResponse } from './types';
+export type { AiAnalyzerProvider, AiAnalyzerProviderAnalyzeParams, AiAnalyzerRequest, AiAnalyzerResponse } from './types';
 export { createAiAnalyzerRequestFromWordContext } from './lib/createRequest';
-export { analyzeWithMock } from './lib/mock';
+export { analyzeTextWithAiAnalyzer } from './services/analyzerService';
