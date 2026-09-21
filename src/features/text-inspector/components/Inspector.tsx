@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import AnalyzerPreview from './AnalyzerPreview';
 import type { ClassifiedPdfTextSegment } from '../../../shared/types/reader';
 import { buildTextAnalysis, getWordContextByWordId, type TextAnalysisPage, type TextWord } from '../../text-analysis';
 
@@ -73,6 +74,7 @@ function InspectorContent({ pageNumber, segments }: TextInspectorProps) {
       ) : <p>{selection
         ? 'No context found in the current text model. Select a word below.'
         : 'No word selected. Select a word below to inspect its context.'}</p>}
+      <AnalyzerPreview context={selected} />
       {entries.map((page) => (<details key={page.id} open>
         <summary>Page {page.pageNumber} · {page.paragraphs.length} paragraphs</summary>
         {page.paragraphs.map((paragraph, index) => (
