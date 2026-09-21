@@ -1,5 +1,12 @@
 export type AiAnalyzerProvider = 'mock';
 
+export interface AiAnalyzerErrorResponse {
+  readonly error: {
+    readonly code: 'INVALID_REQUEST' | 'NOT_IMPLEMENTED' | 'INTERNAL_ERROR';
+    readonly message: string;
+  };
+}
+
 export interface AiAnalyzerProviderAnalyzeParams {
   readonly request: AiAnalyzerRequest;
   readonly provider?: AiAnalyzerProvider;
