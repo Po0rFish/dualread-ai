@@ -17,10 +17,8 @@ export function isAiAnalyzerResponse(value: unknown): value is AiAnalyzerRespons
 }
 
 export function isAiAnalyzerErrorResponse(value: unknown): value is AiAnalyzerErrorResponse {
-  if (!isRecord(value) || !isRecord(value.error)) return false;
-  return typeof value.error.message === 'string' &&
-    (value.error.code === 'INVALID_REQUEST' ||
-      value.error.code === 'NOT_IMPLEMENTED' || value.error.code === 'INTERNAL_ERROR');
+  return isRecord(value) && typeof value.error === 'string' &&
+    (value.status === 400 || value.status === 405 || value.status === 500 || value.status === 501);
 }
 
 /** Copy only contract fields; does not validate input or send a request. */

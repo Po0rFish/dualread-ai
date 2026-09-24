@@ -1,13 +1,13 @@
 # AI analyzer proxy contract
 
-Status: frontend proxy provider available; no backend endpoint, real AI provider,
-or API key is implemented. The async analyzer service defaults to the local mock.
+Status: frontend proxy provider and backend validation stub available. No real AI
+provider or API key is implemented. The async analyzer service defaults to the local mock.
 Only explicit `provider: 'proxy'` calls POST to the internal endpoint. The Inspector
 does not select proxy. Requests use same-origin mode and reject redirects.
 The provider validates response shape and selectedText, and reports safe errors for
 network failures, HTTP failures, and malformed responses without exposing server bodies.
 
-## Future endpoint
+## Endpoint
 
 `POST /api/analyze/word`, same origin, with `Content-Type: application/json`.
 Future browser integration must use this internal endpoint, never a provider URL.
@@ -31,7 +31,7 @@ or reconstructing sentences. Missing neighboring sentences are JSON `null`.
 | pageNumber | positive integer, one-based |
 
 `createAiAnalyzerProxyRequestBody` creates a fresh object containing only these
-fields. It is not a runtime validator. A future server must validate incoming JSON.
+fields. It is not a runtime validator. The stub validates incoming JSON and accepts bodies up to 64 KiB.
 Paragraph context belongs to this analyzer contract only; it is not sent to DeepL.
 No full document, credentials, provider settings, or translation cache fields belong
 in this request.
@@ -59,18 +59,23 @@ or equality with the request. Guards tolerate additional fields.
 
 ## Errors: AiAnalyzerErrorResponse
 
-Errors use JSON with a nested `error` containing a code and a human-readable message:
+Errors use a string `error` and numeric `status` matching the HTTP status:
 
 ```json
-{"error":{"code":"NOT_IMPLEMENTED","message":"AI analyzer proxy is not implemented."}}
+{"error":"AI analyzer proxy is not implemented yet.","status":501}
 ```
 
-| HTTP status | error.code |
-| --- | --- |
-| 400 | `INVALID_REQUEST` |
-| 501 | `NOT_IMPLEMENTED` |
-| 500 | `INTERNAL_ERROR` |
+- 405: non-POST method; includes `Allow: POST`.
+- 400: malformed JSON, invalid required fields, or body exceeding 64 KiB.
+- 501: valid request; analysis is not implemented.
 
-`isAiAnalyzerErrorResponse` checks this shape and the listed codes. Messages must
-not expose credentials or provider internals. These statuses describe the future
-endpoint; the currently absent route does not promise a JSON 501 response.
+`isAiAnalyzerErrorResponse` validates this shape (also reserves 500 for future
+internal errors). Success above describes the future response; the stub never
+returns analysis. Extra request fields are ignored. Text fields must be strings;
+neighboring sentences must be strings or null; pageNumber must be a positive safe
+integer. All required fields must be present.
+
+The same handler in `api/analyze/word.js` serves production and Vite development
+requests. Vite preview does not serve this API. Responses use JSON and `no-store`.
+The handler makes no external calls, requires no key, logs no text, and persists
+nothing. The Inspector still uses mock by default.

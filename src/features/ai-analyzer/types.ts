@@ -1,10 +1,8 @@
 export type AiAnalyzerProvider = 'mock' | 'proxy';
 
 export interface AiAnalyzerErrorResponse {
-  readonly error: {
-    readonly code: 'INVALID_REQUEST' | 'NOT_IMPLEMENTED' | 'INTERNAL_ERROR';
-    readonly message: string;
-  };
+  readonly error: string;
+  readonly status: 400 | 405 | 500 | 501;
 }
 
 export interface AiAnalyzerProviderAnalyzeParams {

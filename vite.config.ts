@@ -1,6 +1,7 @@
 import react from '@vitejs/plugin-react';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { defineConfig, type Plugin } from 'vite';
+import analyzerStub from './api/analyze/word.js';
 
 const DEEPL_PROXY_PATH = '/api/translate/deepl';
 const DEEPL_AUTH_HEADER_PREFIX = 'DeepL-Auth-Key';
@@ -215,5 +216,13 @@ const createDeepLDevProxyPlugin = (): Plugin => {
 };
 
 export default defineConfig({
-  plugins: [react(), createDeepLDevProxyPlugin()],
+  plugins: [react(), createDeepLDevProxyPlugin(), {
+    name: 'dualread-analyzer-stub',
+    configureServer(server) {
+      server.middlewares.use((request, response, next) => {
+        if (getRequestPath(request) !== '/api/analyze/word') return next();
+        void analyzerStub(request, response);
+      });
+    },
+  }],
 });
